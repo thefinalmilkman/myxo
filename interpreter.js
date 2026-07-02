@@ -895,9 +895,25 @@ class Interpreter {
         this.audit.push(entry);
         return r;
       } catch (e) {
-        entry.ok = false; entry.error = e.message;
+        // Compute the message DEFENSIVELY first — a native may `throw null` / `throw "str"` / `throw {}`,
+        // and reading `.message` off a non-object would itself throw a TypeError that escapes rescue
+        // (the gate's exact repro). Do this before touching the ledger so the audit entry always records.
+        const msg = (e && e.message != null) ? String(e.message) : String(e);
+        entry.ok = false; entry.error = msg;
         this.audit.push(entry);
-        throw e;
+        // A FAILING host capability must be rescuable in-script, exactly like a fence denial —
+        // `attempt { lookup(x) } rescue e { ... }` is the documented pattern (§15 catches NxError only).
+        // A raw JS error from the host (network refused, timeout, host bug) previously leaked through
+        // attempt/rescue and killed the whole run — the lichen-sentry dogfood caught it: a DOWN brain
+        // crashed the monitor instead of producing its ALERT verdict.
+        if (e instanceof NxError) throw e;
+        const wrapped = new NxError(`capability '${callee.name}' failed: ${msg}`, line);
+        // PRESERVE policy flags: command-fence's policyError throws a PLAIN Error with nxFence=true (a
+        // denial a flow-router must NOT route around) — and nxFail marks an intentional failure. Stripping
+        // them would let a router bypass a policy refusal and would break `expect ... to fail`. Carry them.
+        if (e && e.nxFence) wrapped.nxFence = true;
+        if (e && e.nxFail) wrapped.nxFail = true;
+        throw wrapped;
       }
     }
     if (callee && callee.__agent) {

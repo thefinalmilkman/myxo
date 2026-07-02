@@ -35,9 +35,13 @@ function runScript(script, opts = {}) {
   const result = { ok: true, output: '', audit, error: null };
   const requireManifest = opts.requireManifest !== undefined ? !!opts.requireManifest : true;
   const moduleLoader = opts.moduleLoader !== undefined ? opts.moduleLoader : null;
+  // Accumulate output OUTSIDE run() so it survives a failing script. With capture:true the chunks
+  // died inside the throw and a failed run returned output:'' — everything the script emitted before
+  // failing (a monitor's verdict, an agent's partial report) was silently dropped. Evidence survives.
+  let buf = '';
   try {
-    result.output = run(script, {
-      capture: true,
+    run(script, {
+      output: (s) => { buf += s; },
       dir: opts.dir,
       maxDepth: opts.maxDepth,
       maxSteps: opts.maxSteps,
@@ -52,6 +56,7 @@ function runScript(script, opts = {}) {
     result.ok = false;
     result.error = typeof e.format === 'function' ? e.format() : e.message;
   }
+  result.output = buf;
   return result;
 }
 
