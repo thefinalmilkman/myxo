@@ -1,0 +1,14 @@
+agent make_counter(start = 0) {
+  seed n = start
+  report agent() {
+    n = n + 1
+    report n
+  }
+}
+agent make_accumulator() {
+  seed total = 0
+  report agent(x) {
+    total = total + x
+    report total
+  }
+}

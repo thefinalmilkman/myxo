@@ -1,0 +1,4 @@
+test "empty list" { expect describe([]) is "empty" }
+test "single element" { expect describe([9]) is "one" }
+test "mesh kind" { expect describe({ "kind": "widget" }) is "widget" }
+test "fallthrough" { expect describe(42) is "other" }

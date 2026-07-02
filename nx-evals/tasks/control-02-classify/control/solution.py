@@ -1,0 +1,10 @@
+def sign_word(n):
+    match n:
+        case 0:
+            return "zero"
+        case 1:
+            return "one"
+        case -1:
+            return "neg-one"
+        case _:
+            return "other"

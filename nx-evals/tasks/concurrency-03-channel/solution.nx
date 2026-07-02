@@ -1,0 +1,19 @@
+agent producer(c, xs) {
+  for each x in xs { give x to c }
+}
+
+agent consumer(c, count) {
+  seed s = 0
+  reinforce count times {
+    take v from c
+    s = s + v
+  }
+  report s
+}
+
+agent sumViaChannel(xs) {
+  seed ch = channel()
+  spawn producer(ch, xs)
+  seed job = spawn consumer(ch, len(xs))
+  report await(job)
+}

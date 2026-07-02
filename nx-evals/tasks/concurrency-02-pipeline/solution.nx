@@ -1,0 +1,13 @@
+agent cube(n) { report n * n * n }
+
+agent total(xs) {
+  seed s = 0
+  for each x in xs { s = s + x }
+  report s
+}
+
+agent cubeSum(xs) {
+  seed tasks = []
+  for each x in xs { tasks = tasks + [dispatch cube(x)] }
+  report gather tasks | total
+}

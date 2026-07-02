@@ -1,0 +1,15 @@
+assert describe([]) == "empty"
+assert describe([1]) == "one"
+assert describe(["x"]) == "one"
+assert describe([1, 2]) == "other"
+assert describe([1, 2, 3]) == "other"
+assert describe({"kind": "cat"}) == "cat"
+assert describe({"kind": "dog", "legs": 4}) == "dog"
+assert describe({"other": 1}) == "other"
+assert describe({}) == "other"
+assert describe(42) == "other"
+assert describe("hello") == "other"
+# kind value passthrough, overlapping shapes
+assert describe({"kind": "empty"}) == "empty"
+assert describe({"kind": "one"}) == "one"
+print("ok")

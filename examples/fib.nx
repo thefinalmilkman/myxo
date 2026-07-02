@@ -1,0 +1,11 @@
+agent fib(n) {
+  when n < 2 {
+    report n
+  }
+  report fib(n - 1) + fib(n - 2)
+}
+seed i = 0
+reinforce i < 10 {
+  emit fib(i)
+  i = i + 1
+}

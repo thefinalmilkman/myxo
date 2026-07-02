@@ -1,0 +1,8 @@
+agent group_by_mod3(xs) {
+  seed m = { "0": [], "1": [], "2": [] }
+  for each x in xs {
+    seed k = x % 3
+    m[k] = m[k] + [x]
+  }
+  report m
+}

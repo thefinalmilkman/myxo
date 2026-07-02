@@ -1,0 +1,11 @@
+test "spread" { expect group_by_mod3([1, 2, 3, 4, 5, 6]) is { "0": [3, 6], "1": [1, 4], "2": [2, 5] } }
+test "only zeros" { expect group_by_mod3([3, 6, 9]) is { "0": [3, 6, 9], "1": [], "2": [] } }
+test "three ones" { expect group_by_mod3([1, 4, 7]) is { "0": [], "1": [1, 4, 7], "2": [] } }
+test "mixed order" { expect group_by_mod3([2, 3, 1]) is { "0": [3], "1": [1], "2": [2] } }
+test "single" { expect group_by_mod3([5]) is { "0": [], "1": [], "2": [5] } }
+test "empty" { expect group_by_mod3([]) is { "0": [], "1": [], "2": [] } }
+test "bucket lookup" { expect group_by_mod3([0, 3, 4])["0"] is [0, 3] }
+test "collide len3 start1" { expect group_by_mod3([1, 2, 3]) is { "0": [3], "1": [1], "2": [2] } }
+test "longer" { expect group_by_mod3([10, 11, 12, 13, 14]) is { "0": [12], "1": [10, 13], "2": [11, 14] } }
+test "collide len3 start1" { expect group_by_mod3([1, 2, 3]) is { "0": [3], "1": [1], "2": [2] } }
+test "longer" { expect group_by_mod3([10, 11, 12, 13, 14]) is { "0": [12], "1": [10, 13], "2": [11, 14] } }

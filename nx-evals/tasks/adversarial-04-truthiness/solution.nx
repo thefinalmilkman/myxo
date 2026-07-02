@@ -1,0 +1,3 @@
+agent with_default(value, fallback) {
+  report value or fallback
+}

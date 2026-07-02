@@ -1,0 +1,9 @@
+test "pipe 5" { expect process(5) is 11 }
+test "pipe 0" { expect process(0) is 1 }
+test "pipe 10" { expect process(10) is 21 }
+test "map double 3" { expect apply_map(double, [1, 2, 3]) is [2, 4, 6] }
+test "map inc 3" { expect apply_map(inc, [1, 2, 3]) is [2, 3, 4] }
+test "map double other" { expect apply_map(double, [5, 0, 7]) is [10, 0, 14] }
+test "map empty" { expect apply_map(double, []) is [] }
+test "map single" { expect apply_map(inc, [41]) is [42] }
+test "pipe first-arg order" { expect (7 | double) is 14 }

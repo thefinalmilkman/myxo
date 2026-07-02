@@ -1,0 +1,7 @@
+agent safe_div(a, b) {
+  attempt {
+    report a / b
+  } rescue e {
+    report "undefined"
+  }
+}

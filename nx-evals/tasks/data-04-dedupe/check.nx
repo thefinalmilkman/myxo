@@ -1,0 +1,11 @@
+test "basic dupes" { expect dedupe(["a", "b", "a", "c"]) is ["a", "b", "c"] }
+test "all same" { expect dedupe(["x", "x", "x"]) is ["x"] }
+test "no dupes" { expect dedupe(["p", "q", "r"]) is ["p", "q", "r"] }
+test "order kept" { expect dedupe(["c", "a", "b", "a", "c"]) is ["c", "a", "b"] }
+test "adjacent and far" { expect dedupe(["m", "m", "n", "m"]) is ["m", "n"] }
+test "single" { expect dedupe(["solo"]) is ["solo"] }
+test "empty" { expect dedupe([]) is [] }
+test "collide start-x" { expect dedupe(["x", "y", "x"]) is ["x", "y"] }
+test "longer mixed" { expect dedupe(["a", "b", "a", "c", "b", "d"]) is ["a", "b", "c", "d"] }
+test "collide start-x" { expect dedupe(["x", "y", "x"]) is ["x", "y"] }
+test "longer mixed" { expect dedupe(["a", "b", "a", "c", "b", "d"]) is ["a", "b", "c", "d"] }

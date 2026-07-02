@@ -1,0 +1,6 @@
+agent sq(n) { report n * n }
+agent squares(xs) {
+  seed tasks = []
+  for each x in xs { tasks = tasks + [dispatch sq(x)] }
+  report gather tasks
+}

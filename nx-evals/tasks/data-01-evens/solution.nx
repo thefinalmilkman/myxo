@@ -1,0 +1,7 @@
+agent evens_doubled(xs) {
+  seed out = []
+  for each x in xs {
+    when x % 2 == 0 { out = out + [x * 2] }
+  }
+  report out
+}

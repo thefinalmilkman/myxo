@@ -1,0 +1,8 @@
+test "three distinct"   { expect cubeSum([1, 2, 3]) is 36 }
+test "three same"       { expect cubeSum([2, 2, 2]) is 24 }
+test "three with zero"  { expect cubeSum([0, 1, 2]) is 9 }
+test "four"             { expect cubeSum([1, 2, 3, 4]) is 100 }
+test "two"              { expect cubeSum([3, 1]) is 28 }
+test "single"          { expect cubeSum([4]) is 64 }
+test "empty"           { expect cubeSum([]) is 0 }
+test "cube worker"     { expect cube(5) is 125 }

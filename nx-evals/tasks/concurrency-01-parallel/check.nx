@@ -1,0 +1,2 @@
+test "parallel squares in order" { expect squares([1, 2, 3, 4]) is [1, 4, 9, 16] }
+test "single" { expect squares([7]) is [49] }

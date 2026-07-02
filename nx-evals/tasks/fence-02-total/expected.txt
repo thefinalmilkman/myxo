@@ -1,0 +1,5 @@
+start: channel open
+spend ok: spent 5
+spend ok: spent 4
+budget blocked
+over-cap blocked

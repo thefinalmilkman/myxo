@@ -1,0 +1,3 @@
+read: contents-of:notes.txt
+write blocked
+read again: contents-of:notes.txt

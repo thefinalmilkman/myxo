@@ -1,0 +1,4 @@
+test "equal contents, different objects" { expect same_contents([1, 2, 3], [1, 2, 3]) is live }
+test "different element" { expect same_contents([1, 2, 3], [1, 2, 4]) is not live }
+test "different length" { expect same_contents([1, 2], [1, 2, 3]) is not live }
+test "both empty" { expect same_contents([], []) is live }

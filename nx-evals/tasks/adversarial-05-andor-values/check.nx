@@ -1,0 +1,9 @@
+test "or returns first live value" { expect first_truthy(0, "found", 3) is "found" }
+test "or all dead returns last" { expect first_truthy(0, "", void) is void }
+test "or first live" { expect first_truthy(7, 8, 9) is 7 }
+test "or skips empties" { expect first_truthy([], {}, 42) is 42 }
+test "and returns last when all live" { expect last_if_all(1, 2, 3) is 3 }
+test "and returns first dead" { expect last_if_all(1, 0, 3) is 0 }
+test "and short-circuits on dead string" { expect last_if_all("x", "", "y") is "" }
+test "and all live strings" { expect last_if_all("a", "b", "c") is "c" }
+test "or is not coerced to bool" { expect first_truthy(0, 5, 0) is not live }

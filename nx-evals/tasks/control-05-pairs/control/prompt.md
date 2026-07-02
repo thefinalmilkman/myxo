@@ -1,0 +1,1 @@
+Define a function `count_ordered_pairs(xs, target)` that counts how many ordered pairs of indices `(i, j)` — including `i == j` — satisfy `xs[i] + xs[j] == target`. Use nested loops over the list. An empty list has zero such pairs.

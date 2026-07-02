@@ -1,0 +1,2 @@
+# ouroboros.nx — a strand that tries to weave itself. The runtime catches the cycle.
+weave "ouroboros.nx"

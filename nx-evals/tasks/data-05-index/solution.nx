@@ -1,0 +1,7 @@
+agent index_by_id(records) {
+  seed m = {}
+  for each r in records {
+    m[r["id"]] = r["name"]
+  }
+  report m
+}

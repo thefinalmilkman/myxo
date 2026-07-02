@@ -1,0 +1,12 @@
+agent sum_to(n) {
+  when n <= 0 { report 0 }
+  report n + sum_to(n - 1)
+}
+agent fib(n) {
+  when n < 2 { report n }
+  report fib(n - 1) + fib(n - 2)
+}
+agent gcd(a, b) {
+  when b == 0 { report a }
+  report gcd(b, a % b)
+}

@@ -1,0 +1,1 @@
+Define a function `word_freq(text)` that takes a string of space-separated words and returns a dict mapping each distinct word to the number of times it appears. Words are separated by single spaces. An empty string returns an empty dict.

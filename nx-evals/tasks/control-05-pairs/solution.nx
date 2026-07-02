@@ -1,0 +1,9 @@
+agent count_ordered_pairs(xs, target) {
+  seed n = 0
+  for each a in xs {
+    for each b in xs {
+      when a + b == target { n = n + 1 }
+    }
+  }
+  report n
+}

@@ -1,0 +1,7 @@
+test "zero" { expect sign_word(0) is "zero" }
+test "one" { expect sign_word(1) is "one" }
+test "neg one" { expect sign_word(-1) is "neg-one" }
+test "two" { expect sign_word(2) is "other" }
+test "neg two" { expect sign_word(-2) is "other" }
+test "hundred" { expect sign_word(100) is "other" }
+test "not one point five" { expect sign_word(1.5) is "other" }

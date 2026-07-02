@@ -1,0 +1,12 @@
+# automatic flow-routing — the SLIME MOLD. Several providers can do one job; the runtime learns which to use:
+# success + speed reinforce a tube, failure decays it and reroutes, every tube passively fades. Traffic
+# converges to the working, FASTER path on its own — Physarum, executing. No manual policy, no if/else.
+
+agent fast(x)   { report x * 2 }                                                   # cheap, always works -> shortest tube
+agent slow(x)   { seed s = random()  reinforce 400000 times { s = s + 1 }  report x * 2 }  # genuinely costly (impure, so the living mesh won't memoize it away) -> a longer tube
+agent broken(x) { fail "provider offline" }                                        # always fails -> its tube decays away
+
+seed compute = route("compute", [broken, slow, fast])
+
+reinforce 12 times { emit compute(21) }     # 42 every time — the router always finds a working path
+emit "tube conductivities:", flows("compute")   # fast strongest, slow weak, broken near zero

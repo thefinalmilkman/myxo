@@ -1,0 +1,11 @@
+test "repeat" { expect word_freq("a b a") is { "a": 2, "b": 1 } }
+test "all same" { expect word_freq("x x x") is { "x": 3 } }
+test "distinct three" { expect word_freq("cat dog fish") is { "cat": 1, "dog": 1, "fish": 1 } }
+test "mixed counts" { expect word_freq("red red blue red blue") is { "red": 3, "blue": 2 } }
+test "single" { expect word_freq("solo") is { "solo": 1 } }
+test "empty" { expect word_freq("") is {} }
+test "lookup" { expect word_freq("go go stop")["go"] is 2 }
+test "four distinct" { expect word_freq("one two two three three three") is { "one": 1, "two": 2, "three": 3 } }
+test "collide same-first" { expect word_freq("a b c a b c d") is { "a": 2, "b": 2, "c": 2, "d": 1 } }
+test "four distinct" { expect word_freq("one two two three three three") is { "one": 1, "two": 2, "three": 3 } }
+test "collide same-first" { expect word_freq("a b c a b c d") is { "a": 2, "b": 2, "c": 2, "d": 1 } }

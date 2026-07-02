@@ -1,0 +1,8 @@
+agent word_freq(text) {
+  seed m = {}
+  when text == "" { report m }
+  for each w in split(text, " ") {
+    when has(m, w) { m[w] = m[w] + 1 } otherwise { m[w] = 1 }
+  }
+  report m
+}

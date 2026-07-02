@@ -1,0 +1,12 @@
+agent double(x) { report x * 2 }
+agent inc(x) { report x + 1 }
+agent apply_map(f, xs) {
+  seed out = []
+  for each x in xs {
+    out = out + [f(x)]
+  }
+  report out
+}
+agent process(x) {
+  report x | double | inc
+}

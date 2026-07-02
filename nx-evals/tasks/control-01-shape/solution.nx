@@ -1,0 +1,8 @@
+agent describe(v) {
+  match v {
+    [] { report "empty" }
+    [x] { report "one" }
+    { "kind": k } { report k }
+    _ { report "other" }
+  }
+}

@@ -1,0 +1,7 @@
+agent count_distinct(ks) {
+  seed m = {}
+  for each k in ks {
+    m[k] = live
+  }
+  report len(keys(m))
+}

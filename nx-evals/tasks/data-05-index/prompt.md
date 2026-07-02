@@ -1,0 +1,1 @@
+Define an agent `index_by_id(records)` that takes a list of meshes, each having an `"id"` key and a `"name"` key, and returns a single mesh mapping each record's `"id"` (coerced to a string key) to that record's `"name"`. If two records share the same id, the later one in the list wins. An empty input returns an empty mesh.

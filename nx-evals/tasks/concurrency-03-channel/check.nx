@@ -1,0 +1,7 @@
+test "three distinct" { expect sumViaChannel([1, 2, 3]) is 6 }
+test "three same"     { expect sumViaChannel([5, 5, 5]) is 15 }
+test "three big"      { expect sumViaChannel([10, 20, 30]) is 60 }
+test "four"           { expect sumViaChannel([1, 2, 3, 4]) is 10 }
+test "two"            { expect sumViaChannel([7, 3]) is 10 }
+test "single"         { expect sumViaChannel([4]) is 4 }
+test "empty"          { expect sumViaChannel([]) is 0 }

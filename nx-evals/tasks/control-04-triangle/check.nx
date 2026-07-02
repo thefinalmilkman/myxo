@@ -1,0 +1,7 @@
+test "five" { expect sum_to(5) is 15 }
+test "one" { expect sum_to(1) is 1 }
+test "ten" { expect sum_to(10) is 55 }
+test "four" { expect sum_to(4) is 10 }
+test "zero" { expect sum_to(0) is 0 }
+test "negative" { expect sum_to(-3) is 0 }
+test "two" { expect sum_to(2) is 3 }

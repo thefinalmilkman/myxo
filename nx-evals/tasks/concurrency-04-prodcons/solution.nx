@@ -1,0 +1,29 @@
+agent source(out, xs) {
+  for each x in xs { give x to out }
+}
+
+agent doubler(inp, out, count) {
+  reinforce count times {
+    take x from inp
+    give x * 2 to out
+  }
+}
+
+agent collect(inp, count) {
+  seed acc = []
+  reinforce count times {
+    take y from inp
+    acc = acc + [y]
+  }
+  report acc
+}
+
+agent doubleAll(xs) {
+  seed a = channel(2)
+  seed b = channel(2)
+  seed n = len(xs)
+  spawn source(a, xs)
+  spawn doubler(a, b, n)
+  seed job = spawn collect(b, n)
+  report await(job)
+}

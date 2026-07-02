@@ -1,0 +1,1 @@
+Define a function `with_default(value, fallback)` that returns `value` when `value` is truthy, otherwise returns `fallback`. Note that `None`, `0`, `""`, the empty list `[]`, and the empty dict `{}` are ALL falsy, so `with_default(0, 99)` returns `99` and `with_default("", "def")` returns `"def"`. This is falsy-based, not just a None check.

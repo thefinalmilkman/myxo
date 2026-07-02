@@ -1,0 +1,13 @@
+needs readFile
+
+seed data = readFile("notes.txt")
+emit "read: " + data
+
+attempt {
+  writeFile("notes.txt", "hacked")
+  emit "wrote ok"
+} rescue e {
+  emit "write blocked"
+}
+
+emit "read again: " + readFile("notes.txt")

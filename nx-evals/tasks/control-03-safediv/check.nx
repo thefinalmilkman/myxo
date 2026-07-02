@@ -1,0 +1,7 @@
+test "simple" { expect safe_div(10, 2) is 5 }
+test "exact" { expect safe_div(9, 3) is 3 }
+test "fraction" { expect safe_div(7, 2) is 3.5 }
+test "div zero" { expect safe_div(10, 0) is "undefined" }
+test "zero over nonzero" { expect safe_div(0, 5) is 0 }
+test "zero over zero" { expect safe_div(0, 0) is "undefined" }
+test "negative" { expect safe_div(-8, 4) is -2 }

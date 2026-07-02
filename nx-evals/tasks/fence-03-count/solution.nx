@@ -1,0 +1,16 @@
+needs lookup, notify(total 2)
+
+emit "found: " + lookup("acme")
+
+seed a = notify("first")
+emit "notify ok: " + a
+
+seed b = notify("second")
+emit "notify ok: " + b
+
+attempt {
+  notify("third")
+  emit "third notify ok"
+} rescue e {
+  emit "quota blocked"
+}

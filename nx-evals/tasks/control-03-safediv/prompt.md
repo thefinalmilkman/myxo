@@ -1,0 +1,1 @@
+Define an agent `safe_div(a, b)` that returns `a` divided by `b`. Dividing by zero is a runtime error in Nx; wrap the division in an `attempt`/`rescue` block so that when the division fails, the agent returns the string `"undefined"` instead of raising.

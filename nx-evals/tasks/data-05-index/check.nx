@@ -1,0 +1,11 @@
+test "two records" { expect index_by_id([{ "id": 1, "name": "alice" }, { "id": 2, "name": "bob" }]) is { "1": "alice", "2": "bob" } }
+test "three records" { expect index_by_id([{ "id": 7, "name": "x" }, { "id": 8, "name": "y" }, { "id": 9, "name": "z" }]) is { "7": "x", "8": "y", "9": "z" } }
+test "later wins" { expect index_by_id([{ "id": 1, "name": "old" }, { "id": 1, "name": "new" }]) is { "1": "new" } }
+test "mixed collision" { expect index_by_id([{ "id": 5, "name": "a" }, { "id": 6, "name": "b" }, { "id": 5, "name": "c" }]) is { "5": "c", "6": "b" } }
+test "single" { expect index_by_id([{ "id": 42, "name": "solo" }]) is { "42": "solo" } }
+test "empty" { expect index_by_id([]) is {} }
+test "lookup" { expect index_by_id([{ "id": 3, "name": "three" }])["3"] is "three" }
+test "collide name-alice later-wins" { expect index_by_id([{ "id": 1, "name": "alice" }, { "id": 1, "name": "carol" }]) is { "1": "carol" } }
+test "four records" { expect index_by_id([{ "id": 1, "name": "a" }, { "id": 2, "name": "b" }, { "id": 3, "name": "c" }, { "id": 2, "name": "d" }]) is { "1": "a", "2": "d", "3": "c" } }
+test "collide name-alice later-wins" { expect index_by_id([{ "id": 1, "name": "alice" }, { "id": 1, "name": "carol" }]) is { "1": "carol" } }
+test "four records" { expect index_by_id([{ "id": 1, "name": "a" }, { "id": 2, "name": "b" }, { "id": 3, "name": "c" }, { "id": 2, "name": "d" }]) is { "1": "a", "2": "d", "3": "c" } }

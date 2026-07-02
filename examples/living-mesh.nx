@@ -1,0 +1,22 @@
+# the living mesh — Nx's signature, the Nexus law EXECUTED at runtime:
+# useful pathways reinforce (hot + pure agents memoize), useless ones decay (cold pathways are metabolized).
+
+# a hot, PURE agent. Call it hard and its pathway PROMOTES (memoizes) on its own —
+# the exponential fib tree collapses to linear. No keyword, no cache call; the runtime gardens itself.
+agent fib(n) {
+  when n < 2 { report n }
+  report fib(n - 1) + fib(n - 2)
+}
+emit "fib(30) =", fib(30)          # instant, despite ~2.7M naive calls — the hot pathway reinforced
+
+# heat is introspectable in-language: strength rises on every read.
+seed used_a_lot = 1
+seed barely_used = 2
+reinforce 5 times { emit "tick", used_a_lot }
+emit "strength of used_a_lot:", strength("used_a_lot")
+emit "strength of barely_used:", strength("barely_used")
+
+# metabolize: cold pathways decay away, hot ones (and promoted pure agents) survive.
+seed card = metabolize(3)
+emit "decayed (cold pathways):", card["reaped"]
+emit "promoted (hot pure agents):", card["promoted"]

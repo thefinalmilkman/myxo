@@ -1,0 +1,15 @@
+needs pay(max 10), log
+
+agent tryPay(amount) {
+  attempt {
+    seed r = pay(amount)
+    report "paid " + amount
+  } rescue e {
+    log("denied:" + amount)
+    report "refused " + amount
+  }
+}
+
+emit tryPay(8)
+emit tryPay(25)
+emit tryPay(3)

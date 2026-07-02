@@ -1,0 +1,11 @@
+test "sum 5" { expect sum_to(5) is 15 }
+test "sum 3" { expect sum_to(3) is 6 }
+test "sum 0" { expect sum_to(0) is 0 }
+test "sum 1" { expect sum_to(1) is 1 }
+test "fib 7" { expect fib(7) is 13 }
+test "fib 10" { expect fib(10) is 55 }
+test "fib 0" { expect fib(0) is 0 }
+test "fib 1" { expect fib(1) is 1 }
+test "gcd 48 18" { expect gcd(48, 18) is 6 }
+test "gcd 17 5" { expect gcd(17, 5) is 1 }
+test "gcd 100 0" { expect gcd(100, 0) is 100 }

@@ -1,0 +1,1 @@
+Define a function `numeric_sum(xs)` that returns the sum of only the NUMBER elements of the list `xs`, skipping any element that is a string. `numeric_sum([1, "2", 3])` is `4`. The result must be a number, never a string; check each element's type and only add the numbers (treat booleans as non-numbers and skip them).

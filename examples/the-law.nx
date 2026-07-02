@@ -1,0 +1,27 @@
+# the-law.nx — the core law of the Nexus, executed.
+# "Agents do not merge. Useful pathways reinforce. Useless pathways decay."
+# Run with --trace to watch the mesh:  node nx.js examples/the-law.nx --trace
+
+agent reinforce_path(name, pulses) {
+  seed strength = 0
+  reinforce strength < pulses {
+    strength = strength + 1
+  }
+  report name + " reinforced to " + str(strength)
+}
+
+seed telegram = reinforce_path("telegram", 5)
+seed wallet   = reinforce_path("wallet", 3)
+seed bridge   = reinforce_path("bridge", 1)
+
+emit telegram
+emit wallet
+emit bridge
+
+# Useful pathways reinforce through use — reading telegram raises its strength.
+emit telegram
+emit telegram
+
+# A pathway gone quiet is let go.
+decay bridge
+emit "bridge has decayed from the mesh"

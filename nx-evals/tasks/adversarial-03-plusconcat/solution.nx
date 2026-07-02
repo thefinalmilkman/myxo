@@ -1,0 +1,9 @@
+agent numeric_sum(xs) {
+  seed total = 0
+  for each x in xs {
+    when type(x) == "number" {
+      total = total + x
+    }
+  }
+  report total
+}

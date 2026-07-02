@@ -1,0 +1,11 @@
+agent dedupe(xs) {
+  seed seen = {}
+  seed out = []
+  for each x in xs {
+    when has(seen, x) { } otherwise {
+      seen[x] = live
+      out = out + [x]
+    }
+  }
+  report out
+}

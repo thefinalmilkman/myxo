@@ -1,0 +1,14 @@
+seed c = make_counter()
+test "counter first" { expect c() is 1 }
+test "counter second" { expect c() is 2 }
+test "counter third" { expect c() is 3 }
+seed c10 = make_counter(10)
+test "counter start 10 first" { expect c10() is 11 }
+test "counter start 10 second" { expect c10() is 12 }
+test "counters independent" { expect c() is 4 }
+seed acc = make_accumulator()
+test "acc 5" { expect acc(5) is 5 }
+test "acc +3" { expect acc(3) is 8 }
+test "acc +10" { expect acc(10) is 18 }
+seed acc2 = make_accumulator()
+test "acc2 independent" { expect acc2(100) is 100 }

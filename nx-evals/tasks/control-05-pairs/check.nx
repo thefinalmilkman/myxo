@@ -1,0 +1,11 @@
+test "three sum four" { expect count_ordered_pairs([1, 2, 3], 4) is 3 }
+test "three sum five" { expect count_ordered_pairs([1, 2, 3], 5) is 2 }
+test "diag only" { expect count_ordered_pairs([1, 2, 3], 2) is 1 }
+test "no pairs" { expect count_ordered_pairs([1, 2, 3], 100) is 0 }
+test "all equal target" { expect count_ordered_pairs([2, 2, 2], 4) is 9 }
+test "single hit" { expect count_ordered_pairs([5], 10) is 1 }
+test "empty" { expect count_ordered_pairs([], 0) is 0 }
+test "collide t4 start1" { expect count_ordered_pairs([1, 1, 3], 4) is 4 }
+test "longer" { expect count_ordered_pairs([1, 3, 1, 3], 4) is 8 }
+test "collide t4 start1" { expect count_ordered_pairs([1, 1, 3], 4) is 4 }
+test "longer" { expect count_ordered_pairs([1, 3, 1, 3], 4) is 8 }

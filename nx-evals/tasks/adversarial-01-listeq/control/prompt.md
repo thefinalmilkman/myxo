@@ -1,0 +1,1 @@
+Define a function `same_contents(a, b)` that returns `True` if two lists have equal contents (same length, equal elements in order) and `False` otherwise. Compare length and elements yourself rather than relying on any object-identity check.

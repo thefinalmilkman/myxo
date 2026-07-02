@@ -1,0 +1,22 @@
+# nexus-mesh.nx — one script, many tools, one law.
+#
+# Every verb below is an MCP tool the host bridged in. The lookup might be a Python
+# query, the notify a Telegram send over JS, a process action a shell command. This
+# script neither knows nor cares which language is behind each name — it only knows
+# what it was granted. That is the mesh: many languages, one fence, one audit trail.
+
+needs james_db_query, james_telegram_send
+
+seed lead = james_db_query("SELECT name FROM leads ORDER BY score DESC LIMIT 1")
+emit "top lead: " + lead
+
+james_telegram_send({ "text": "new top lead: " + lead })
+
+# james_pm2_action was bridged by the host too -- but THIS script never declared it,
+# so the fence refuses it before the host is ever called. The mesh connects every
+# tool; the manifest decides which ones this script may speak.
+attempt {
+  james_pm2_action({ "action": "restart", "process": "all" })
+} rescue err {
+  emit "blocked: " + err["message"]
+}

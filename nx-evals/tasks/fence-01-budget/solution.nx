@@ -1,0 +1,25 @@
+needs lookup, spend(max 5)
+
+seed lead = lookup("x")
+emit "lead: " + lead
+
+attempt {
+  seed r = spend(3)
+  emit "spend ok: " + r
+} rescue e {
+  emit "spend blocked: " + e["message"]
+}
+
+attempt {
+  spend(9)
+  emit "big spend ok"
+} rescue e {
+  emit "over-cap blocked"
+}
+
+attempt {
+  purge("all")
+  emit "purge ok"
+} rescue e {
+  emit "undeclared blocked"
+}

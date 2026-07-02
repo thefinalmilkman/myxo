@@ -1,0 +1,1 @@
+Define an agent `squares(xs)` that computes the square of every number in the list **in parallel** using `dispatch` and `gather`, returning the results in the original order. Also define the worker agent `sq(n)` returning `n * n`.

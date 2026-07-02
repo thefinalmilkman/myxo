@@ -1,0 +1,3 @@
+Define two agents that return closures capturing mutable state:
+- `make_counter(start = 0)` — returns a zero-argument closure. Each call increments an internal count and returns the new value. With no `start` it yields `1, 2, 3, ...`; with `start = 10` it yields `11, 12, ...`. Two counters created separately must not share state.
+- `make_accumulator()` — returns a closure that takes a number, adds it to a running total (starting at `0`), and returns the total so far.

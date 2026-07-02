@@ -1,0 +1,1 @@
+Define a function `evens_doubled(xs)` that takes a list of numbers and returns a new list containing each **even** number **doubled**, preserving order. Odd numbers are dropped. An empty input returns an empty list.

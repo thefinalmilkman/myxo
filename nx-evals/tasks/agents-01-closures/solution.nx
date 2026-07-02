@@ -1,0 +1,3 @@
+agent adder(n) { report agent(x) { report x + n } }
+agent greet(name, greeting = "Hello") { report greeting + ", " + name }
+agent count(...items) { report len(items) }

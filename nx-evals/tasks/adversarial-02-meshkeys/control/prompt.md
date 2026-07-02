@@ -1,0 +1,1 @@
+Define a function `count_distinct(ks)` that takes a list `ks` and returns how many DISTINCT keys it holds when each element is treated as a string key. Elements are compared by their string form, so the number `1` and the string `"1"` count as the SAME key: `count_distinct([1, "1"])` is `1`, not `2`.

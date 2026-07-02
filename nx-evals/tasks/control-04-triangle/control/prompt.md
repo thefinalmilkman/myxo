@@ -1,0 +1,1 @@
+Define a function `sum_to(n)` that returns the sum of all integers from `1` up to and including `n`, computed with a `while` loop using a running accumulator and counter. For `n` of `0` or less, return `0`.

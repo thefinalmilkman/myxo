@@ -1,0 +1,1 @@
+Define a function `safe_div(a, b)` that returns `a` divided by `b`. Dividing by zero raises `ZeroDivisionError` in Python; wrap the division in a `try`/`except` block so that when the division fails, the function returns the string `"undefined"` instead of raising.

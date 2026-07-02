@@ -1,0 +1,5 @@
+seed add5 = adder(5)
+test "closure adds" { expect add5(10) is 15 }
+test "default greeting" { expect greet("Zero") is "Hello, Zero" }
+test "custom greeting" { expect greet("Zero", "Hey") is "Hey, Zero" }
+test "rest count" { expect count(1, 2, 3, 4) is 4 }

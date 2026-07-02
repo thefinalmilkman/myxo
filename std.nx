@@ -1,0 +1,88 @@
+# std.nx — the Nx standard library, written in Nx itself.
+# Loaded before every program. These agents lean on the native builtins
+# (push, len, range, keys...) but everything here is plain Nx.
+
+# Apply an agent to every item, collecting the results.
+agent map(xs, f) {
+  seed out = []
+  for each x in xs {
+    push(out, f(x))
+  }
+  report out
+}
+
+# Keep only the items an agent says are live.
+agent filter(xs, f) {
+  seed out = []
+  for each x in xs {
+    when f(x) {
+      push(out, x)
+    }
+  }
+  report out
+}
+
+# Fold a list down to a single value.
+agent reduce(xs, start, f) {
+  seed acc = start
+  for each x in xs {
+    acc = f(acc, x)
+  }
+  report acc
+}
+
+# Sum of a list of numbers.
+agent sum(xs) {
+  report reduce(xs, 0, agent(a, b) { report a + b })
+}
+
+# Largest value in a list.
+agent biggest(xs) {
+  seed best = xs[0]
+  for each x in xs {
+    when x > best {
+      best = x
+    }
+  }
+  report best
+}
+
+# Is a value present in a list?
+agent contains(xs, target) {
+  for each x in xs {
+    when x == target {
+      report live
+    }
+  }
+  report dead
+}
+
+# Count items that satisfy an agent.
+agent count(xs, f) {
+  seed n = 0
+  for each x in xs {
+    when f(x) {
+      n = n + 1
+    }
+  }
+  report n
+}
+
+# — constants —
+seed PI = 3.141592653589793
+seed E = 2.718281828459045
+
+# First and last of a list.
+agent first(xs) { report xs[0] }
+agent last(xs) { report xs[len(xs) - 1] }
+
+# Keep a number within a range.
+agent clamp(x, lo, hi) {
+  when x < lo { report lo }
+  when x > hi { report hi }
+  report x
+}
+
+# Split text into words and lines (leans on the native split/trim).
+agent words(s) { report split(trim(s), " ") }
+agent lines(s) { report split(s, "\n") }

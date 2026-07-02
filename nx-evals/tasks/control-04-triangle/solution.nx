@@ -1,0 +1,9 @@
+agent sum_to(n) {
+  seed i = 1
+  seed total = 0
+  reinforce i <= n {
+    total = total + i
+    i = i + 1
+  }
+  report total
+}

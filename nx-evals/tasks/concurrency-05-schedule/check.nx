@@ -1,0 +1,7 @@
+test "three distinct"  { expect triples([1, 2, 3]) is [3, 6, 9] }
+test "three same"      { expect triples([2, 2, 2]) is [6, 6, 6] }
+test "three with zero" { expect triples([0, 1, 4]) is [0, 3, 12] }
+test "four order"      { expect triples([1, 2, 3, 4]) is [3, 6, 9, 12] }
+test "two"             { expect triples([10, 20]) is [30, 60] }
+test "single"         { expect triples([5]) is [15] }
+test "empty"          { expect triples([]) is [] }

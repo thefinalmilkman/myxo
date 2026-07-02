@@ -1,0 +1,1 @@
+Define an agent `sum_to(n)` that returns the sum of all integers from `1` up to and including `n`, computed with a `reinforce` while-loop (a running accumulator and counter). For `n` of `0` or less, return `0`.

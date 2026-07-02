@@ -1,0 +1,9 @@
+test "tally default label with nums" { expect tally("total", 1, 2, 3) is "total: 6" }
+test "tally custom label" { expect tally("sum", 10, 20) is "sum: 30" }
+test "tally only default label, no nums" { expect tally() is "total: 0" }
+test "tally label only" { expect tally("empty") is "empty: 0" }
+test "tally many nums" { expect tally("x", 1, 1, 1, 1, 1) is "x: 5" }
+test "curried 1 2 3" { expect adder3(1)(2)(3) is 6 }
+test "curried 10 20 30" { expect adder3(10)(20)(30) is 60 }
+test "curried 0 0 0" { expect adder3(0)(0)(0) is 0 }
+test "curried partial reuse" { expect adder3(5)(5)(5) is 15 }

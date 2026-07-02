@@ -1,0 +1,12 @@
+test "1 and str1 collide" { expect count_distinct([1, "1"]) is 1 }
+test "three collide" { expect count_distinct([1, "1", 1]) is 1 }
+test "num and str mix" { expect count_distinct([1, "1", 2, "2"]) is 2 }
+test "genuinely distinct" { expect count_distinct([1, 2, 3]) is 3 }
+test "str distinct" { expect count_distinct(["a", "b", "c"]) is 3 }
+test "mixed with dup" { expect count_distinct([5, "5", "a", "a"]) is 2 }
+test "empty" { expect count_distinct([]) is 0 }
+test "single" { expect count_distinct([7]) is 1 }
+test "collide len2 distinct" { expect count_distinct([1, 2]) is 2 }
+test "collide len2 dup" { expect count_distinct([3, 3]) is 1 }
+test "collide len2 distinct" { expect count_distinct([1, 2]) is 2 }
+test "collide len2 dup" { expect count_distinct([3, 3]) is 1 }

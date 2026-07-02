@@ -1,0 +1,18 @@
+# Pattern matching — run the first arm whose SHAPE fits, binding its names.
+agent classify(msg) {
+  match msg {
+    ["move", x, y]     { emit "move to", x, y }
+    ["stop"]           { emit "halt" }
+    { "kind": "ping" } { emit "pong" }
+    0                  { emit "zero" }
+    [head, ...rest]    { emit "list head", head, "rest", rest }
+    n                  { emit "something else:", n }
+  }
+}
+
+classify(["move", 3, 4])
+classify(["stop"])
+classify({ "kind": "ping", "id": 7 })   # extra keys are fine — mesh patterns match a subset
+classify(0)
+classify([1, 2, 3])
+classify("hello")

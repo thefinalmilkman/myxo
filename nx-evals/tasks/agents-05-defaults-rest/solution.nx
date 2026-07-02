@@ -1,0 +1,14 @@
+agent tally(label = "total", ...nums) {
+  seed s = 0
+  for each n in nums {
+    s = s + n
+  }
+  report label + ": " + s
+}
+agent adder3(a) {
+  report agent(b) {
+    report agent(c) {
+      report a + b + c
+    }
+  }
+}

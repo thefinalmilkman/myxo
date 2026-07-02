@@ -1,0 +1,22 @@
+{
+  "name": "nx-lang",
+  "version": "1.5.0",
+  "description": "Nx — the language of the Nexus. A small, embeddable language whose runtime is the Nexus law: useful pathways reinforce, useless pathways decay.",
+  "bin": {
+    "nx": "nx.js"
+  },
+  "main": "nx.js",
+  "scripts": {
+    "test": "node --test",
+    "test:core": "node --test test/nx.test.js test/format.test.js test/nxtest.test.js test/match.test.js test/pipe.test.js test/types.test.js test/lsp.test.js test/cli.test.js test/docs.test.js test/concurrent.test.js test/scheduler.test.js test/fibers.test.js test/examples.test.js test/plan.test.js test/mcp-framing.test.js test/mcp-server.test.js test/command-fence.test.js test/receipt.test.js",
+    "test:polyglot": "node --test test/polyglot.test.js",
+    "test:nx": "node nx.js test tests/",
+    "lsp": "node nx.js lsp",
+    "docs": "node docs/build.js",
+    "test:full": "node --test",
+    "fmt": "node nx.js fmt",
+    "start": "node nx.js"
+  },
+  "license": "MIT",
+  "keywords": ["nexus", "language", "interpreter", "nx", "embeddable"]
+}

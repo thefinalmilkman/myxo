@@ -1,0 +1,6 @@
+agent first_truthy(a, b, c) {
+  report a or b or c
+}
+agent last_if_all(a, b, c) {
+  report a and b and c
+}

@@ -1,0 +1,9 @@
+test "void falls back" { expect with_default(void, 99) is 99 }
+test "zero falls back" { expect with_default(0, 99) is 99 }
+test "empty string falls back" { expect with_default("", "def") is "def" }
+test "empty list falls back" { expect with_default([], [1]) is [1] }
+test "empty mesh falls back" { expect with_default({}, 7) is 7 }
+test "live number kept" { expect with_default(5, 99) is 5 }
+test "nonempty string kept" { expect with_default("hi", "def") is "hi" }
+test "dead bool falls back" { expect with_default(dead, 42) is 42 }
+test "live bool kept" { expect with_default(live, 42) is live }

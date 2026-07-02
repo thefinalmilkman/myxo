@@ -1,0 +1,9 @@
+agent worker(chunk) {
+  seed out = []
+  for each n in chunk { out = out + [n * 3] }
+  report out
+}
+
+agent triples(xs) {
+  report schedule("triplePool", [worker, worker], xs)
+}

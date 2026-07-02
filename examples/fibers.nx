@@ -1,0 +1,57 @@
+# fibers.nx — cooperative concurrency: fibers + channels.
+# Where gather/schedule give PARALLELISM (many cores), fibers give CONCURRENCY: many tasks interleaving on one
+# thread, communicating through channels. No shared memory — the value passes hand to hand, so it's race-free.
+
+# --- producer / consumer over a channel ---
+seed ch = channel()
+
+agent producer(c) {
+  seed i = 0
+  reinforce i < 5 {
+    give i * i to c          # `give VALUE to CHANNEL` — send (parks only if a bounded channel is full)
+    i = i + 1
+  }
+}
+
+agent consumer(c) {
+  seed k = 0
+  reinforce k < 5 {
+    take sq from c           # `take NAME from CHANNEL` — parks this fiber until a value arrives
+    emit "got square: " + str(sq)
+    k = k + 1
+  }
+}
+
+spawn producer(ch)            # start a fiber (cooperative, not a thread)
+spawn consumer(ch)
+drain()                       # run the fibers to completion -> 0, 1, 4, 9, 16
+
+# --- a three-stage pipeline: numbers -> doubled -> printed ---
+seed a = channel()
+seed b = channel()
+
+agent source(o) { seed i = 1
+  reinforce i < 4 { give i to o
+    i = i + 1
+  }
+}
+agent doubler(inp, o) { seed k = 0
+  reinforce k < 3 { take x from inp
+    give x * 2 to o
+    k = k + 1
+  }
+}
+agent sink(inp) { seed k = 0
+  reinforce k < 3 { take y from inp
+    emit "pipeline -> " + str(y)
+    k = k + 1
+  }
+}
+spawn source(a)
+spawn doubler(a, b)
+spawn sink(b)
+drain()                       # -> 2, 4, 6
+
+# --- await: get a fiber's reported value back on the main line ---
+agent compute(n) { report n * n * n }
+emit "await cube(4) = " + str(await(spawn compute(4)))    # -> 64

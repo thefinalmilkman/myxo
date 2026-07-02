@@ -1,0 +1,8 @@
+agent sign_word(n) {
+  match n {
+    0 { report "zero" }
+    1 { report "one" }
+    -1 { report "neg-one" }
+    _ { report "other" }
+  }
+}

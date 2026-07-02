@@ -1,0 +1,9 @@
+agent same_contents(a, b) {
+  when len(a) != len(b) { report dead }
+  seed i = 0
+  reinforce i < len(a) {
+    when a[i] != b[i] { report dead }
+    i = i + 1
+  }
+  report live
+}

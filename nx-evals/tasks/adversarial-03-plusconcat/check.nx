@@ -1,0 +1,13 @@
+test "skips string" { expect numeric_sum([1, "2", 3]) is 4 }
+test "all numbers" { expect numeric_sum([1, 2, 3]) is 6 }
+test "leading string" { expect numeric_sum(["10", 1, 2]) is 3 }
+test "all strings" { expect numeric_sum(["a", "b", "c"]) is 0 }
+test "mixed with zero" { expect numeric_sum([0, "5", 5]) is 5 }
+test "empty" { expect numeric_sum([]) is 0 }
+test "single number" { expect numeric_sum([42]) is 42 }
+test "single string" { expect numeric_sum(["42"]) is 0 }
+test "result is number kind" { expect type(numeric_sum([1, "2", 3])) is "number" }
+test "collide num-str-num" { expect numeric_sum([5, "2", 5]) is 10 }
+test "collide num-str-num b" { expect numeric_sum([10, "x", 20]) is 30 }
+test "collide num-str-num" { expect numeric_sum([5, "2", 5]) is 10 }
+test "collide num-str-num b" { expect numeric_sum([10, "x", 20]) is 30 }

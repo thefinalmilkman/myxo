@@ -1,0 +1,1 @@
+Define a function `dedupe(xs)` that takes a list of strings and returns a new list with duplicates removed, keeping only the first occurrence of each value and preserving that first-seen order. An empty input returns an empty list.

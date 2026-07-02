@@ -1,0 +1,23 @@
+needs charge, spend(max 5, total 12)
+
+emit "start: " + charge("open")
+
+seed a = spend(5)
+emit "spend ok: " + a
+
+seed b = spend(4)
+emit "spend ok: " + b
+
+attempt {
+  spend(4)
+  emit "third spend ok"
+} rescue e {
+  emit "budget blocked"
+}
+
+attempt {
+  spend(9)
+  emit "big spend ok"
+} rescue e {
+  emit "over-cap blocked"
+}
