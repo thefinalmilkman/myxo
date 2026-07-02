@@ -20,18 +20,31 @@ Reference solutions validate the set and the harness:
 The product metric is the **Nx-vs-Python delta on one model**: can a model write correct code
 more reliably in Nx than in Python? Measured on the one tier that runs for free today.
 
-| Model | Nx (30 tasks) | Python control (20 pure-compute tasks) |
-|---|---|---|
-| `qwen2.5-coder:7b` (local, free) | **0/30 (0%)** | **18/20 (90%)** |
-| frontier (`claude-opus-4-8`) | — blocked (see below) | — blocked |
+| Model | Nx — full `SPEC.md` | Nx — `NX_PROMPT.md` (Phase 5) | Python control |
+|---|---|---|---|
+| `qwen2.5-coder:7b` (local, free) | **0/30 (0%)** | **19/30 (63%)** | **18/20 (90%)** |
+| frontier (`claude-opus-4-8`) | — blocked | — blocked | — blocked |
+
+### ⭐ The NX_PROMPT lift: 0/30 → 19/30 (Phase 5 confirmed on the local tier)
+
+The 0/30 with the full 5,087-token `SPEC.md` was **29 parse errors** — the 7B defaulted to C-style
+semicolons the whole time. `NX_PROMPT.md` (Phase 5's distilled teaching prompt — **1,316 tokens**,
+examples-first, the traps as imperatives, "NO SEMICOLONS. EVER." rule #1) fixed it: the **same model,
+same tasks, same machine** jumped to **19/30 (63%)**. The floor was never the model — it was the document.
+Per bucket: adversarial **5/5** (it nails the footguns — identity equality, mesh-key coercion, +concat,
+truthiness), control **5/5**, concurrency 4/5, agents 3/5, data 2/5, **fence 0/5** (the manifest+budget+
+refusal bucket is the hardest to teach a small model — honest, and thesis-relevant: the moat is exactly
+where a 7B still needs richer examples or the frontier tier). Reproduce: `NX_EVAL_SPEC=prompt
+NX_EVAL_OLLAMA_MODEL=qwen2.5-coder:7b node nx-evals/run-evals.js --model ollama`.
 
 ### What the numbers say (honest read)
 
-- **A 7B local model writes Python at 90% but cannot produce valid Nx at all (0%).** The Nx
-  failures are 29 parse errors + 1 missing-construct — the model defaults to the C/Python
-  syntax it knows (semicolons, dot-access) that Nx doesn't use. It never gets far enough to
-  be judged on semantics.
-- **This is a floor signal, not a verdict on the thesis.** It says the mid/small tier needs
+- **The document, not the model, was the floor.** With the full spec a 7B writes Python at 90% but
+  scored **0/30** on Nx (29 parse errors — C-style semicolons). Handed `NX_PROMPT.md` instead, the same
+  model reached **19/30 (63%)** — the Phase-5 artifact was the missing piece, confirmed on the free tier.
+  It now clears the entire adversarial (footgun) bucket; only the fence bucket (0/5) resists a 7B.
+- **The earlier framing below is kept for the record but superseded by the NX_PROMPT result.**
+- **This was a floor signal, not a verdict on the thesis.** It said the mid/small tier needs
   the language spec delivered as a prompt-optimized artifact (the ROADMAP's Phase-5
   `NX_PROMPT` — a distilled spec + canonical examples + the traps), *or* that 7B is simply
   below the floor for a from-scratch language. The frontier baseline (blocked, below) is the

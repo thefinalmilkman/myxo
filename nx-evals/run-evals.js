@@ -194,7 +194,11 @@ function score(task, solutionSrc) {
 
 async function getSolution(task, mode, gen) {
   if (mode === 'ref') return task.solution;
-  return await gen.generate(task, { specPath: path.join(ROOT, '..', 'SPEC.md') });
+  // NX_EVAL_SPEC picks which language doc the model sees: 'spec' (full SPEC.md, the default) or 'prompt'
+  // (NX_PROMPT.md, the Phase-5 distilled teaching prompt). The delta between the two is a real Phase-5 number.
+  const which = (process.env.NX_EVAL_SPEC || 'spec').toLowerCase();
+  const file = which === 'prompt' || which === 'nx_prompt' ? 'NX_PROMPT.md' : 'SPEC.md';
+  return await gen.generate(task, { specPath: path.join(ROOT, '..', file) });
 }
 
 async function main() {
