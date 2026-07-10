@@ -2,7 +2,7 @@
 // types.test.js — gradual types: optional annotations, enforced as runtime contracts only under strict.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const { formatSource } = require('../format');
 const loose = (s) => run(s, { capture: true });                 // default: annotations ignored
 const strict = (s) => run(s, { capture: true, strict: true });  // --strict: contracts enforced
@@ -48,7 +48,7 @@ test('an unknown type name is a parse error', () => {
 });
 
 test('default params now use `=` and still fill in (migration regression)', () => {
-  assert.equal(loose('agent g(name, greeting = "hi"){ report greeting + " " + name }\nemit g("Nx")'), 'hi Nx\n');
+  assert.equal(loose('agent g(name, greeting = "hi"){ report greeting + " " + name }\nemit g("Myxo")'), 'hi Myxo\n');
   assert.equal(loose('agent box(w, h = w){ report w * h }\nemit box(5)'), '25\n');
 });
 

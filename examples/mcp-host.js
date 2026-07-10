@@ -1,4 +1,4 @@
-// mcp-host.js — the host that bridges a catalog of MCP tools into Nx as fenced
+// mcp-host.js — the host that bridges a catalog of MCP tools into Myxo as fenced
 // capabilities, then runs an agent script through them and reads the audit ledger.
 //   node examples/mcp-host.js
 //
@@ -9,7 +9,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 
 const client = {
   tools: [
@@ -25,7 +25,7 @@ const client = {
   },
 };
 
-const src = fs.readFileSync(path.join(__dirname, 'nexus-mesh.nx'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, 'nexus-mesh.myx'), 'utf8');
 
 let ledger = [];
 run(src, { dir: __dirname, mcp: client, onAudit: (l) => { ledger = l; } });

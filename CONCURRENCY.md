@@ -1,6 +1,6 @@
-# Nx Concurrency — `dispatch` / `gather`
+# Myxo Concurrency — `dispatch` / `gather`
 
-> Real multi-core parallelism, built on Nx's own bones (the worker+Atomics pattern from `nx-live`).
+> Real multi-core parallelism, built on Myxo's own bones (the worker+Atomics pattern from `myxo-live`).
 > Honest about its shape: this is **parallelism of pure-ish, isolated tasks** — not cooperative coroutines,
 > not shared-memory threads. The isolation is the feature: it is what makes the parallelism race-free.
 
@@ -12,7 +12,7 @@ gather [t1, t2, ...]    ->  runs every task on its own OS thread, in parallel,
                             blocks until all finish, returns their results IN ORDER.
 ```
 
-```nx
+```myx
 agent slow(n) { seed s = 0
   for each i in range(n) { s = s + (i % 7) }
   report s
@@ -26,7 +26,7 @@ emit gather [dispatch slow(8000000), dispatch slow(8000000), dispatch slow(80000
 
 ## Why this shape (and not threads-with-shared-memory)
 
-Nx's law is *"agents do not merge."* Shared mutable state across threads is exactly merging — and the bug
+Myxo's law is *"agents do not merge."* Shared mutable state across threads is exactly merging — and the bug
 factory (data races) that comes with it. So a dispatched task runs in **its own fresh interpreter**: it sees
 
 - the **standard library**,
@@ -46,9 +46,9 @@ as a meaningless blob.
 
 The interpreter is a synchronous tree-walker, and we keep it that way. `gather` gets parallelism without going
 async by reusing the zero-dependency **worker + `Atomics` + `SharedArrayBuffer`** pattern already proven in
-`nx-live`:
+`myxo-live`:
 
-1. `gather` spawns one `Worker` (`nx-par-worker.js`) per task, handing each the agent's AST (`params` + `body`)
+1. `gather` spawns one `Worker` (`myxo-par-worker.js`) per task, handing each the agent's AST (`params` + `body`)
    and its args as JSON, plus one shared `Int32Array` barrier counter and a private `MessageChannel`.
 2. Each worker builds a fresh interpreter, defines the agent under its own name (recursion), runs it, then in a
    `finally` — on *every* path, success or error — posts its result (or its error) and `Atomics.add`s the
@@ -101,7 +101,7 @@ Measured on the dev laptop (i7-8750H, 6 physical / 12 logical cores, ~2GB free R
 > governs **execution** — fast workers pull more flux, slow/failed ones decay and get routed around. The
 > language *becomes* the scheduler.
 
-```nx
+```myx
 agent worker(chunk) {           # a worker takes a CHUNK (a list) and returns a results list, same length, in order
   seed out = []
   for each x in chunk { out = out + [x * x] }
@@ -158,7 +158,7 @@ one reroute round, then surface the error. (A multi-tier cascade is a future opt
 > **concurrency** — many tasks interleaving on *one* thread, talking through **channels**. It's the
 > law-consistent way to do *communicating* tasks: no shared memory, the value passes hand to hand.
 
-```nx
+```myx
 seed ch = channel()                              # an unbounded channel; channel(n) is bounded (backpressure)
 
 agent producer(c) { seed i = 0

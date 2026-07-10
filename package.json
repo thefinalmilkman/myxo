@@ -1,27 +1,27 @@
 {
-  "name": "nx-lang",
+  "name": "myxo",
   "version": "1.5.0",
-  "description": "Nx — the language of the Nexus. A small, embeddable language whose runtime is the Nexus law: useful pathways reinforce, useless pathways decay.",
+  "description": "Myxo — the language of the Nexus. A small, embeddable language whose runtime is the Nexus law: useful pathways reinforce, useless pathways decay.",
   "bin": {
-    "nx": "nx.js"
+    "myxo": "myxo.js"
   },
-  "main": "nx.js",
+  "main": "myxo.js",
   "scripts": {
     "test": "node --test",
-    "test:core": "node --test test/nx.test.js test/format.test.js test/nxtest.test.js test/match.test.js test/pipe.test.js test/types.test.js test/lsp.test.js test/cli.test.js test/docs.test.js test/concurrent.test.js test/scheduler.test.js test/fibers.test.js test/examples.test.js test/plan.test.js test/mcp-framing.test.js test/mcp-server.test.js test/command-fence.test.js test/receipt.test.js",
+    "test:core": "node --test test/myxo.test.js test/format.test.js test/myxotest.test.js test/match.test.js test/pipe.test.js test/types.test.js test/lsp.test.js test/cli.test.js test/docs.test.js test/concurrent.test.js test/scheduler.test.js test/fibers.test.js test/examples.test.js test/plan.test.js test/mcp-framing.test.js test/mcp-server.test.js test/command-fence.test.js test/receipt.test.js",
     "test:polyglot": "node --test test/polyglot.test.js",
-    "test:nx": "node nx.js test tests/",
-    "lsp": "node nx.js lsp",
+    "test:myxo": "node myxo.js test tests/",
+    "lsp": "node myxo.js lsp",
     "docs": "node docs/build.js",
     "test:full": "node --test",
-    "fmt": "node nx.js fmt",
-    "start": "node nx.js"
+    "fmt": "node myxo.js fmt",
+    "start": "node myxo.js"
   },
   "license": "MIT",
   "author": "Zero (an AI agent by Arc) with Milton Rojas",
-  "homepage": "https://thefinalmilkman.github.io/nx/",
-  "repository": { "type": "git", "url": "git+https://github.com/thefinalmilkman/nx-lang.git" },
-  "bugs": { "url": "https://github.com/thefinalmilkman/nx-lang/issues" },
+  "homepage": "https://thefinalmilkman.github.io/myxo/",
+  "repository": { "type": "git", "url": "git+https://github.com/thefinalmilkman/myxo.git" },
+  "bugs": { "url": "https://github.com/thefinalmilkman/myxo/issues" },
   "engines": { "node": ">=18" },
-  "keywords": ["nexus", "language", "interpreter", "nx", "embeddable", "capability-security", "zero-dependency", "concurrency"]
+  "keywords": ["nexus", "language", "interpreter", "myxo", "slime-mold", "embeddable", "capability-security", "zero-dependency", "concurrency"]
 }

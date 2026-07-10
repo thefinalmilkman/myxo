@@ -1,10 +1,10 @@
 'use strict';
-// polyglot.test.js — Nx as the bridge for other languages. Requires `python` on PATH.
+// polyglot.test.js — Myxo as the bridge for other languages. Requires `python` on PATH.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const { pycall, pyeval, jscall, jseval, plcall, pleval, sh, bridgeExec } = require('../polyglot');
 
 const ML = path.join(__dirname, '..', 'examples', 'mathlib.py').replace(/\\/g, '/');
@@ -21,11 +21,11 @@ const testPerl = (name, fn) => test(name, (t) => {
   return fn(t);
 });
 
-test('Nx calls a Python function through the fence', () => {
+test('Myxo calls a Python function through the fence', () => {
   assert.equal(out(`needs pycall\nemit pycall("${ML}", "add", 2, 3)`), '5\n');
 });
 
-test('Python returns a mesh; Nx reads it (value mapping object<->mesh)', () => {
+test('Python returns a mesh; Myxo reads it (value mapping object<->mesh)', () => {
   assert.equal(out(`needs pycall\nseed s = pycall("${ML}", "stats", [10, 4, 7, 2])\nemit s["sum"], s["max"], s["n"]`), '23 10 4\n');
 });
 
@@ -33,7 +33,7 @@ test('pyeval evaluates a Python expression', () => {
   assert.equal(out('needs pyeval\nemit pyeval("2 ** 10")'), '1024\n');
 });
 
-test('a Python exception becomes a rescuable Nx fail', () => {
+test('a Python exception becomes a rescuable Myxo fail', () => {
   assert.equal(out('needs pyeval\nattempt { emit pyeval("1/0") } rescue e { emit "caught" }'), 'caught\n');
 });
 
@@ -84,30 +84,30 @@ test('HONEST: pyeval is an arbitrary-code capability (full runtime power, NOT a 
 
 // ---- more languages via the same defineLang factory: Node + Perl, value-mapped through one fenced contract ----
 
-test('Nx calls a Node function through the fence', () => {
+test('Myxo calls a Node function through the fence', () => {
   assert.equal(out(`needs jscall\nemit jscall("${MLJS}", "add", 10, 20)`), '30\n');
 });
-test('Node returns an object; Nx reads it as a mesh', () => {
+test('Node returns an object; Myxo reads it as a mesh', () => {
   assert.equal(out(`needs jscall\nseed s = jscall("${MLJS}", "stats", [3, 9, 1])\nemit s["sum"], s["max"], s["n"]`), '13 9 3\n');
 });
 test('jseval evaluates a Node expression', () => {
   assert.equal(out('needs jseval\nemit jseval("2 ** 10")'), '1024\n');
 });
-test('a Node exception becomes a rescuable Nx fail', () => {
+test('a Node exception becomes a rescuable Myxo fail', () => {
   assert.equal(out('needs jseval\nattempt { emit jseval("throw new Error(\'boom\')") } rescue e { emit "caught" }'), 'caught\n');
 });
 
-testPerl('Nx calls a Perl sub through the fence', () => {
+testPerl('Myxo calls a Perl sub through the fence', () => {
   assert.equal(out(`needs plcall\nemit plcall("${MLPL}", "add", 4, 5)`), '9\n');
 });
-testPerl('Perl returns a hashref; Nx reads it as a mesh', () => {
+testPerl('Perl returns a hashref; Myxo reads it as a mesh', () => {
   assert.equal(out(`needs plcall\nseed s = plcall("${MLPL}", "stats", [3, 9, 1])\nemit s["sum"], s["max"], s["n"]`), '13 9 3\n');
 });
 testPerl('pleval evaluates a Perl expression', () => {
   assert.equal(out('needs pleval\nemit pleval("3 * 7")'), '21\n');
 });
 
-testPerl('three languages share ONE audit ledger (Nx is the connective contract)', () => {
+testPerl('three languages share ONE audit ledger (Myxo is the connective contract)', () => {
   let audit = [];
   out(`needs pycall, jscall, plcall\npycall("${ML}", "add", 1, 1)\njscall("${MLJS}", "add", 1, 1)\nplcall("${MLPL}", "add", 1, 1)`,
     { onAudit: (l) => { audit = l; } });

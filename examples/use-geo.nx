@@ -1,9 +1,0 @@
-# use-geo.nx — weave a strand and use what it exposes (v0.3 modules).
-
-weave "geo.nx"                       # flat: pulls area_circle, area_rect, TAU into scope
-emit round(area_circle(2), 2)        # PI * 4  -> 12.57
-emit area_rect(3, 4)                 # 12
-emit round(TAU, 4)                   # 6.2832
-
-weave "geo.nx" as geo                # namespaced: the exposed names as a mesh
-emit round(geo["area_circle"](1), 2) # PI -> 3.14

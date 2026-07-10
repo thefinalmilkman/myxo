@@ -1,5 +1,5 @@
 'use strict';
-// format.js - canonical Nx source printer. It formats the parsed AST, so invalid code is refused instead of
+// format.js - canonical Myxo source printer. It formats the parsed AST, so invalid code is refused instead of
 // guessed through. Comments ARE preserved: they aren't in the AST, so we collect them from the REAL lexer
 // (string/interpolation-aware) and re-attach by line — own-line comments above the next statement, a trailing
 // comment on its statement's line. v1 scope is statement-granular: none are ever dropped or fabricated, but a

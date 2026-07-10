@@ -2,7 +2,7 @@
 // pipe.test.js — pipelines (`x | f`) and destructuring (`seed [a, ...t] = xs` / `seed { a, b } = m`).
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const { formatSource } = require('../format');
 const out = (src) => run(src, { capture: true });
 

@@ -6,8 +6,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const os = require('os');
-const { run } = require('../nx');
-const { runParallel } = require('../nx-concurrent');
+const { run } = require('../myxo');
+const { runParallel } = require('../myxo-concurrent');
 const { parse } = require('../parser');
 const out = (src) => run(src, { capture: true });
 

@@ -6,7 +6,7 @@
 // asserted as a direction, not a number, so it can't flake.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const out = (src) => run(src, { capture: true });
 
 const DBL = 'agent dbl(chunk) { seed o = []\n for each x in chunk { o = o + [x * 2] }\n report o }\n';

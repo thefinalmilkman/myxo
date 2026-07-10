@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nx — the language of the Nexus</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Myxo — the language of the Nexus</title><style>
 :root{--bg:#0f1216;--fg:#d7dde3;--mut:#8a94a0;--acc:#6fae8e;--cd:#161b21;--bd:#222a32}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}
 .wrap{max-width:820px;margin:0 auto;padding:2rem 1.25rem 5rem}
@@ -10,9 +10,9 @@ pre{background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:1r
 table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem}th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}th{background:var(--cd)}
 blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
 hr{border:none;border-top:1px solid var(--bd);margin:2rem 0}.mut{color:var(--mut)}
-</style></head><body><nav><a href="index.html">Nx</a><a href="spec.html">Spec</a><a href="readme.html">Guide</a></nav><main class="wrap"><h1 id="nx-1-5">Nx 1.5</h1>
+</style></head><body><nav><a href="index.html">Myxo</a><a href="spec.html">Spec</a><a href="readme.html">Guide</a></nav><main class="wrap"><h1 id="myxo-1-5">Myxo 1.5</h1>
 <blockquote>The language whose runtime <strong>is</strong> a living law. <code>seed</code>, <code>reinforce</code>, <code>decay</code>, <code>agent</code> aren&#39;t library calls — they&#39;re the semantics. Functions are agents; variables are <em>pathways</em> that strengthen each time they&#39;re read; the mesh gardens itself.</blockquote>
-<p>Nx is a small, embeddable language built from scratch in plain Node — <strong>zero dependencies</strong> — with its own parser, interpreter, stdlib, tests, formatter, REPL, language server, and CLI. Its only bridge to the world is a <strong>capability fence</strong>: an Nx script can touch nothing the host didn&#39;t hand it.</p>
+<p>Myxo is a small, embeddable language built from scratch in plain Node — <strong>zero dependencies</strong> — with its own parser, interpreter, stdlib, tests, formatter, REPL, language server, and CLI. Its only bridge to the world is a <strong>capability fence</strong>: an Myxo script can touch nothing the host didn&#39;t hand it.</p>
 <h2 id="the-law-executing">The law, executing</h2>
 <p>The reinforce/decay law isn&#39;t a metaphor bolted on top — it runs the runtime, across both memory and parallel execution:</p>
 <pre><code>agent hot(x) { report x * x }         # a hot, pure agent auto-memoizes — used paths reinforce
@@ -21,7 +21,7 @@ decay cold                            # quiet pathways fade; prune sweeps the we
 schedule(&quot;pool&quot;, [fast, slow], work)  # a batch flows across worker threads, by each tube&#39;s speed
 flows(&quot;pool&quot;)    -&gt;    { fast: 7.1, slow: 1.04 }   # the pool LEARNED which worker is faster</code></pre>
 <p>Nothing else makes one law govern what is <em>remembered</em> and how work is <em>scheduled</em>. The language is the architecture.</p>
-<h2 id="why-nx">Why Nx</h2>
+<h2 id="why-myxo">Why Myxo</h2>
 <ul><li><strong>Capability by construction</strong> — not a sandbox bolted on; <em>absence</em>. <code>spend()</code> doesn&#39;t exist in an agent&#39;s universe unless granted, so there&#39;s nothing to bypass.</li><li><strong>Code that reads like intent</strong> — <code>seed</code>, <code>reinforce</code>, <code>when</code>, <code>match</code>, <code>attempt</code>/<code>rescue</code> — a vocabulary a human audits at a glance and a model emits cleanly.</li><li><strong>The program gardens itself</strong> — hot pure agents memoize automatically; cold pathways can be metabolized. The law, executing.</li></ul>
 <h2 id="quick-taste">Quick taste</h2>
 <pre><code>needs lookup
@@ -34,10 +34,10 @@ agent classify(msg) {
 }
 seed best = scores | filter(passing) | sort | first</code></pre>
 <h2 id="run-it">Run it</h2>
-<pre><code>node nx.js file.nx [--trace] [--strict]   # run (strict enforces gradual types)
-node nx.js test tests/                    # run Nx tests, written in Nx
-node nx.js fmt file.nx --write            # format
-node nx.js lsp                            # stdio language server</code></pre>
+<pre><code>node myxo.js file.myx [--trace] [--strict]   # run (strict enforces gradual types)
+node myxo.js test tests/                    # run Myxo tests, written in Myxo
+node myxo.js fmt file.myx --write            # format
+node myxo.js lsp                            # stdio language server</code></pre>
 <h2 id="read-on">Read on</h2>
 <ul><li><strong><a href="spec.html">The specification</a></strong> — the precise, complete reference.</li><li><strong><a href="readme.html">The guide</a></strong> — a tour with worked examples.</li></ul>
-<p><em>Nx 1.5 — a complete language, built from scratch, zero dependencies. Precisely scoped: the spec says exactly what it does.</em></p></main></body></html>
+<p><em>Myxo 1.5 — a complete language, built from scratch, zero dependencies. Precisely scoped: the spec says exactly what it does.</em></p></main></body></html>

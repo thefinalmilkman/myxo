@@ -1,21 +1,21 @@
 'use strict';
-// mcp-bridge.js — the seam that makes Nx the one fenced surface every tool speaks
-// through. It turns a catalog of MCP tools into Nx capabilities: each tool becomes
-// a native, and Nx's manifest (`needs`), value budgets, and audit ledger then
+// mcp-bridge.js — the seam that makes Myxo the one fenced surface every tool speaks
+// through. It turns a catalog of MCP tools into Myxo capabilities: each tool becomes
+// a native, and Myxo's manifest (`needs`), value budgets, and audit ledger then
 // govern every call. Whatever language or service implements a tool — Python, Rust,
-// a shell, an HTTP endpoint, a model — from inside an Nx script it's just a verb the
+// a shell, an HTTP endpoint, a model — from inside an Myxo script it's just a verb the
 // script was granted. That is the mesh: many languages, one law.
 //
 // The bridge is transport-agnostic on purpose. You hand it a `client`:
 //   { tools: [{ name, description, inputSchema }], call(name, argsObject) -> result }
 // `call` is SYNCHRONOUS (returns the result, not a Promise). A Node host wrapping a
-// live, async MCP server supplies its own sync-invoking shim; Nx stays pure and the
+// live, async MCP server supplies its own sync-invoking shim; Myxo stays pure and the
 // fence stays the host's only grant surface. Async-native execution is the next stone.
 
 const { VOID } = require('./interpreter');
-const { NxError } = require('./errors');
+const { MyxoError } = require('./errors');
 
-// ---- value mapping: Nx values <-> plain JS (the wire between worlds) ----------
+// ---- value mapping: Myxo values <-> plain JS (the wire between worlds) ----------
 
 function nxToJs(v) {
   if (v === VOID || v === undefined) return null;
@@ -32,18 +32,18 @@ function jsToNx(v) {
 }
 
 // Most MCP tools answer with a content envelope: { content: [{type:'text', text}], isError }.
-// Unwrap that to the plain text a script wants; surface an error result as an NxError so
+// Unwrap that to the plain text a script wants; surface an error result as an MyxoError so
 // it lands in the audit ledger and an enclosing `attempt` can rescue it.
 function unwrapResult(res) {
   if (res && typeof res === 'object' && Array.isArray(res.content)) {
     const text = res.content.filter(c => c && c.type === 'text').map(c => c.text).join('\n');
-    if (res.isError) throw new NxError(text || 'MCP tool reported an error');
+    if (res.isError) throw new MyxoError(text || 'MCP tool reported an error');
     return text;
   }
   return res;
 }
 
-// Turn one Nx call's args into the named-arguments object an MCP tool expects.
+// Turn one Myxo call's args into the named-arguments object an MCP tool expects.
 // A mesh maps straight to the object; for ergonomics a lone primitive fills the
 // tool's first required (or first declared) property, so `query("SELECT ...")` works.
 function buildArgs(tool, args) {
@@ -55,11 +55,11 @@ function buildArgs(tool, args) {
     const required = (tool.inputSchema.required && tool.inputSchema.required[0]) || Object.keys(props)[0];
     if (required) return { [required]: nxToJs(a) };
   }
-  throw new NxError(`MCP tool '${tool.name}' needs a mesh of named arguments, e.g. ${tool.name}({ ... })`);
+  throw new MyxoError(`MCP tool '${tool.name}' needs a mesh of named arguments, e.g. ${tool.name}({ ... })`);
 }
 
-// Register every tool in `client` as a fenced Nx capability on `interp`.
-// Returns the list of bridged tool names. After this, an Nx script reaches each
+// Register every tool in `client` as a fenced Myxo capability on `interp`.
+// Returns the list of bridged tool names. After this, an Myxo script reaches each
 // tool by name — bounded by its own `needs` manifest and logged in the audit ledger.
 function bridgeMcpTools(interp, client) {
   if (!client || !Array.isArray(client.tools) || typeof client.call !== 'function') {

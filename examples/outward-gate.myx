@@ -1,0 +1,23 @@
+# outward-gate.myx — the Nexus spend policy, expressed as a LANGUAGE manifest
+# instead of bespoke host code. $5 per transaction, $15 per run. The runtime
+# enforces BOTH ceilings and logs every move; the host just moves the money.
+#
+# This is the whole pitch in five lines: the policy that today lives in a
+# hand-written gate becomes a single line the agent script must obey.
+
+needs send_sol(max 5, total 15), notify
+
+agent try_send(amount) {
+  attempt {
+    seed receipt = send_sol(amount)
+    notify("sent " + amount + ": " + receipt)
+  } rescue e {
+    notify("held: " + e["message"])
+  }
+}
+
+try_send(5)     # ok                      (5 of 15 used)
+try_send(5)     # ok                      (10 of 15 used)
+try_send(4)     # ok                      (14 of 15 used)
+try_send(5)     # over the day budget  -> held (would reach 19)
+try_send(9)     # over the per-tx max  -> held

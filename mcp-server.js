@@ -1,6 +1,6 @@
 'use strict';
-// mcp-server.js — the provider side of MCP for Nx: serve a tool catalog over
-// JSON-RPC 2.0. The mirror of mcp-bridge.js (which bridges tools INTO Nx). Ours,
+// mcp-server.js — the provider side of MCP for Myxo: serve a tool catalog over
+// JSON-RPC 2.0. The mirror of mcp-bridge.js (which bridges tools INTO Myxo). Ours,
 // zero-dependency, drop-in for the low-level @modelcontextprotocol/sdk surface
 // (Server + setRequestHandler + the request-schema tags). The stdio transport and
 // connect() arrive in the next stone, wired in via handleMessage().

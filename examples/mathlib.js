@@ -1,4 +1,4 @@
-// A plain CommonJS module — Nx calls these as fenced capabilities via jscall, no knowledge of Node required.
+// A plain CommonJS module — Myxo calls these as fenced capabilities via jscall, no knowledge of Node required.
 module.exports.add = (a, b) => a + b;
 module.exports.stats = (nums) => ({
   sum: nums.reduce((s, x) => s + x, 0),

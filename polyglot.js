@@ -1,6 +1,6 @@
 'use strict';
-// polyglot.js — Nx as the connective layer for OTHER LANGUAGES. The keystone: an Nx capability is just
-// `name -> fn`, so Nx neither knows nor cares what language is behind it; each runner is a FENCED native, so the
+// polyglot.js — Myxo as the connective layer for OTHER LANGUAGES. The keystone: an Myxo capability is just
+// `name -> fn`, so Myxo neither knows nor cares what language is behind it; each runner is a FENCED native, so the
 // one law governs every cross-language call. TWO tiers (honest — these are NOT one contract):
 //   1. RICH bridge via `defineLang()` -> `Xcall(file,func,...args)` + `Xeval(expr)`, value-mapped (mesh/list/
 //      number/bool round-trip, verified identical across languages) with structured returns. Needs a runtime
@@ -21,12 +21,12 @@
 // `Xeval`/`sh` are ARBITRARY-CODE capabilities: granting one grants the FULL power of that runtime (filesystem,
 // network, subprocess). Use them only for code YOU trust. For untrusted / model-generated callers, expose only
 // STRUCTURED capabilities (one specific function/tool), where the fence is meaningful end to end. Calls are
-// synchronous (execFileSync, built on spawnSync); a persistent-worker fast path is a future plank. Note: Nx
+// synchronous (execFileSync, built on spawnSync); a persistent-worker fast path is a future plank. Note: Myxo
 // numbers are float64, so an integer above 2^53 returned from a language loses precision. Zero deps.
 // Built 2026-06-26 (two-agent gated).
 
 const { execFileSync, execSync } = require('child_process');
-const { NxError } = require('./errors');
+const { MyxoError } = require('./errors');
 const { VOID } = require('./interpreter');
 
 const CAP = 8 * 1024 * 1024, TIMEOUT = 15000;
@@ -34,12 +34,12 @@ const OK = String.fromCharCode(1), ERR = String.fromCharCode(2);   // result-fra
 
 function detail(e) { const s = e.stderr && String(e.stderr).trim(); return s || e.message || (e.code ? String(e.code) : 'failed'); }
 
-// ---- Nx <-> JS value mapping (mesh<->object, list<->array, VOID<->null), with a cycle guard ----
+// ---- Myxo <-> JS value mapping (mesh<->object, list<->array, VOID<->null), with a cycle guard ----
 function nxToJs(v, seen) {
   if (v === VOID) return null;
   if (Array.isArray(v) || v instanceof Map) {
     seen = seen || new Set();
-    if (seen.has(v)) throw new NxError('cannot send a cyclic value across the language bridge');
+    if (seen.has(v)) throw new MyxoError('cannot send a cyclic value across the language bridge');
     seen.add(v);
     let out;
     if (Array.isArray(v)) out = v.map(x => nxToJs(x, seen));
@@ -52,7 +52,7 @@ function nxToJs(v, seen) {
 // JSON for the wire, but a non-finite number is an explicit error (consistent across languages — never a silent null)
 function toJson(v) {
   return JSON.stringify(v, (k, val) => {
-    if (typeof val === 'number' && !isFinite(val)) throw new NxError('cannot send a non-finite number across the language bridge');
+    if (typeof val === 'number' && !isFinite(val)) throw new MyxoError('cannot send a non-finite number across the language bridge');
     return val;
   });
 }
@@ -67,16 +67,16 @@ function jsToNx(v) {
 // after it and spoof the marker. This parser is language-agnostic: U+0001 + JSON on success, U+0002 + msg on error.
 function parseFramed(out, what) {
   const i = out.lastIndexOf(OK), j = out.lastIndexOf(ERR);
-  if (j > i) throw new NxError(`${what} error: ` + out.slice(j + 1).trim());
-  if (i < 0) throw new NxError(`${what} returned no result`);
+  if (j > i) throw new MyxoError(`${what} error: ` + out.slice(j + 1).trim());
+  if (i < 0) throw new MyxoError(`${what} returned no result`);
   try { return jsToNx(JSON.parse(out.slice(i + 1))); }
-  catch (e) { throw new NxError(`${what} returned a value Nx can't represent (non-finite or non-JSON): ` + e.message); }
+  catch (e) { throw new MyxoError(`${what} returned a value Myxo can't represent (non-finite or non-JSON): ` + e.message); }
 }
 
 function runHarness(cmd, flag, harness, extraArgs, label) {
   let out;
   try { out = execFileSync(cmd, [flag, harness, ...extraArgs], { encoding: 'utf8', timeout: TIMEOUT, maxBuffer: CAP }); }
-  catch (e) { throw new NxError(`${label} failed: ` + detail(e)); }
+  catch (e) { throw new MyxoError(`${label} failed: ` + detail(e)); }
   return parseFramed(out, label);
 }
 
@@ -85,11 +85,11 @@ function runHarness(cmd, flag, harness, extraArgs, label) {
 function defineLang({ name, cmd, flag, callHarness, evalHarness }) {
   const call = (args) => {
     const [file, func, ...rest] = args;
-    if (typeof file !== 'string' || typeof func !== 'string') throw new NxError(`${name}call(file, func, ...args) needs file and func as strings`);
+    if (typeof file !== 'string' || typeof func !== 'string') throw new MyxoError(`${name}call(file, func, ...args) needs file and func as strings`);
     return runHarness(cmd, flag, callHarness, [file, func, toJson(rest.map(a => nxToJs(a)))], name);
   };
   const evl = (args) => {
-    if (typeof args[0] !== 'string') throw new NxError(`${name}eval(expr) needs a string`);
+    if (typeof args[0] !== 'string') throw new MyxoError(`${name}eval(expr) needs a string`);
     return runHarness(cmd, flag, evalHarness, [args[0]], name);
   };
   return { call, eval: evl };
@@ -163,20 +163,20 @@ function toArg(a) {
   if (Array.isArray(a) || a instanceof Map) return JSON.stringify(nxToJs(a));
   return String(a);
 }
-// bridgeExec('/path/to/binary' [, fixedArgs]) -> an Nx native; how a compiled C++/Go/Rust binary or CLI plugs in
+// bridgeExec('/path/to/binary' [, fixedArgs]) -> an Myxo native; how a compiled C++/Go/Rust binary or CLI plugs in
 function bridgeExec(cmd, fixedArgs = []) {
   return function (args) {
     let out;
     try { out = execFileSync(cmd, [...fixedArgs, ...args.map(toArg)], { encoding: 'utf8', timeout: TIMEOUT, maxBuffer: CAP }); }
-    catch (e) { throw new NxError(`exec '${cmd}' failed: ` + detail(e)); }
+    catch (e) { throw new MyxoError(`exec '${cmd}' failed: ` + detail(e)); }
     return out.replace(/\r?\n$/, '');
   };
 }
 // sh(command) -> run a shell command line, return stdout. (Shell parsing: hand only trusted strings.)
 function sh(args) {
-  if (typeof args[0] !== 'string') throw new NxError('sh(command) needs a string');
+  if (typeof args[0] !== 'string') throw new MyxoError('sh(command) needs a string');
   try { return execSync(args[0], { encoding: 'utf8', timeout: TIMEOUT, maxBuffer: CAP }).replace(/\r?\n$/, ''); }
-  catch (e) { throw new NxError('shell failed: ' + detail(e)); }
+  catch (e) { throw new MyxoError('shell failed: ' + detail(e)); }
 }
 
 // Convenience: wire the bridges into an interpreter as FENCED capabilities (still gated by `needs`).

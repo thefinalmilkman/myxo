@@ -1,8 +1,8 @@
 'use strict';
-// plan.test.js — `nx plan`: the capability-preview / fence approval surface. Pure analysis, so exact assertions.
+// plan.test.js — `myxo plan`: the capability-preview / fence approval surface. Pure analysis, so exact assertions.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { planScript, formatPlan } = require('../nx-plan');
+const { planScript, formatPlan } = require('../myxo-plan');
 
 test('a script that declares exactly what it calls is clean', () => {
   const p = planScript('needs db_query, telegram_send(max 1)\nseed r = db_query("x")\ntelegram_send("hi")');
@@ -87,7 +87,7 @@ test('the verdict is right-sized (no soundness over-claim) and the name-masking 
   assert.match(f.text, /RUNTIME FENCE enforces|runtime fence is the actual boundary/i);
 });
 test('stdlib agents (map/filter/sum/...) are NOT mistaken for capabilities', () => {
-  // adversary FINDING 2: std.nx agents were flagged as undeclared host capabilities.
+  // adversary FINDING 2: std.myx agents were flagged as undeclared host capabilities.
   const p = planScript('seed xs = [3, 1, 2]\nseed t = sum(xs)\nseed e = filter(xs, agent(x) { report x > 1 })\nseed d = map(xs, agent(x) { report x * 2 })\nemit t');
   assert.deepEqual(p.referenced, []);
   assert.equal(formatPlan(p, 'f').ok, true);

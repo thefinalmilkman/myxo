@@ -1,12 +1,12 @@
 'use strict';
-// errors.js — the single error type used across every stage of Nx.
+// errors.js — the single error type used across every stage of Myxo.
 // Carrying line/col means the lexer, parser, and interpreter can all point
 // the user at exactly where their program went wrong.
 
-class NxError extends Error {
+class MyxoError extends Error {
   constructor(message, line = null, col = null) {
     super(message);
-    this.name = 'NxError';
+    this.name = 'MyxoError';
     this.line = line;
     this.col = col;
   }
@@ -16,7 +16,7 @@ class NxError extends Error {
   // first. `nxStack` is stamped by the interpreter at the deepest agent boundary.
   format() {
     const where = this.line != null ? ` (line ${this.line})` : '';
-    let out = `Nx error${where}: ${this.message}`;
+    let out = `Myxo error${where}: ${this.message}`;
     const s = this.nxStack;
     if (s && s.length) {
       const MAX = 8;                       // deep recursion shouldn't print a wall of frames
@@ -31,7 +31,7 @@ class NxError extends Error {
   }
 }
 
-// A failed `expect` inside a `test` block. Deliberately NOT an NxError, so the code
+// A failed `expect` inside a `test` block. Deliberately NOT an MyxoError, so the code
 // under test can't `rescue` an assertion failure — only the test runner catches it.
 class NxAssertError extends Error {
   constructor(message, line = null) {
@@ -42,4 +42,4 @@ class NxAssertError extends Error {
   }
 }
 
-module.exports = { NxError, NxAssertError };
+module.exports = { MyxoError, NxAssertError };

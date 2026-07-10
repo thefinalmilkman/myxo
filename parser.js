@@ -3,7 +3,7 @@
 // Recursive descent for statements; precedence climbing for expressions.
 
 const { tokenize } = require('./lexer');
-const { NxError } = require('./errors');
+const { MyxoError } = require('./errors');
 
 // Binary operator precedence, low to high. Each level is parsed by folding
 // the level above it. `and`/`or` are keywords; the rest are operator tokens.
@@ -34,7 +34,7 @@ class Parser {
   expect(type, what) {
     const t = this.peek();
     if (t.type !== type) {
-      throw new NxError(`expected ${what || type} but found '${t.value ?? t.type}'`, t.line, t.col);
+      throw new MyxoError(`expected ${what || type} but found '${t.value ?? t.type}'`, t.line, t.col);
     }
     return this.next();
   }
@@ -42,7 +42,7 @@ class Parser {
   expectKeyword(word) {
     if (!this.isKeyword(word)) {
       const t = this.peek();
-      throw new NxError(`expected '${word}' but found '${t.value ?? t.type}'`, t.line, t.col);
+      throw new MyxoError(`expected '${word}' but found '${t.value ?? t.type}'`, t.line, t.col);
     }
     return this.next();
   }
@@ -52,7 +52,7 @@ class Parser {
   expectWord(word) {
     const t = this.peek();
     if (t.type !== 'IDENT' || t.value !== word) {
-      throw new NxError(`expected '${word}' but found '${t.value ?? t.type}'`, t.line, t.col);
+      throw new MyxoError(`expected '${word}' but found '${t.value ?? t.type}'`, t.line, t.col);
     }
     return this.next();
   }
@@ -97,15 +97,15 @@ class Parser {
         case 'take': return this.parseTake();
         case 'yield': { const kw = this.next(); return { type: 'Yield', line: kw.line }; }
         case 'rescue':
-          throw new NxError("'rescue' without a matching 'attempt'", t.line, t.col);
+          throw new MyxoError("'rescue' without a matching 'attempt'", t.line, t.col);
         case 'as':
-          throw new NxError("'as' only follows a 'weave' path", t.line, t.col);
+          throw new MyxoError("'as' only follows a 'weave' path", t.line, t.col);
         case 'agent':
           // `agent name(...)` is a declaration; `agent(...)` is an expression.
           if (this.peek(1).type === 'IDENT') return this.parseAgentDecl();
           break;
         case 'otherwise':
-          throw new NxError("'otherwise' without a matching 'when'", t.line, t.col);
+          throw new MyxoError("'otherwise' without a matching 'when'", t.line, t.col);
       }
     }
     return this.parseExpressionStatement();
@@ -138,9 +138,9 @@ class Parser {
     else if (t.type === 'IDENT') { this.next(); name = t.value; }
     else {
       const hint = (t.type === 'STRING' || t.type === 'NUMBER') ? " — parameter defaults now use '=' (name = default), not ':'" : '';
-      throw new NxError(`expected a type name, got '${t.value ?? t.type}'${hint}`, t.line, t.col);
+      throw new MyxoError(`expected a type name, got '${t.value ?? t.type}'${hint}`, t.line, t.col);
     }
-    if (!VALID_TYPES.has(name)) throw new NxError(`unknown type '${name}' — use number/string/bool/list/mesh/agent/void/any`, t.line, t.col);
+    if (!VALID_TYPES.has(name)) throw new MyxoError(`unknown type '${name}' — use number/string/bool/list/mesh/agent/void/any`, t.line, t.col);
     return name;
   }
 
@@ -148,7 +148,7 @@ class Parser {
     const kw = this.expectKeyword('decay');
     const target = this.parseExpression();
     if (target.type !== 'Identifier' && target.type !== 'Index') {
-      throw new NxError('can only decay a pathway or an indexed slot', kw.line, kw.col);
+      throw new MyxoError('can only decay a pathway or an indexed slot', kw.line, kw.col);
     }
     return { type: 'Decay', target, line: kw.line };
   }
@@ -277,17 +277,17 @@ class Parser {
   parseConstraint(limit) {
     const kind = this.expect('IDENT', "a constraint like 'max' or 'total'").value;
     if (kind !== 'max' && kind !== 'total') {
-      throw new NxError(`unknown capability constraint '${kind}' — use 'max' or 'total'`, this.peek().line);
+      throw new MyxoError(`unknown capability constraint '${kind}' — use 'max' or 'total'`, this.peek().line);
     }
     limit[kind] = this.expect('NUMBER', 'a number for the cap').value;
   }
 
-  // test "name" { ... } — a named test case. Its body runs only under `nx test`
+  // test "name" { ... } — a named test case. Its body runs only under `myxo test`
   // (inert in a normal run), and `expect` assertions inside it are collected.
   parseTest() {
     const kw = this.expectKeyword('test');
     const t = this.peek();
-    if (t.type !== 'STRING') throw new NxError('a test needs a name string: test "..." { }', t.line, t.col);
+    if (t.type !== 'STRING') throw new MyxoError('a test needs a name string: test "..." { }', t.line, t.col);
     this.next();
     const body = this.parseBlock();
     return { type: 'Test', name: t.value, body, line: kw.line };
@@ -295,7 +295,7 @@ class Parser {
 
   // expect EXPR              — the value must be live (truthy)
   // expect EXPR is EXPR      — deep equality   (`is not` for inequality)
-  // expect EXPR to fail      — evaluating EXPR must raise an Nx failure
+  // expect EXPR to fail      — evaluating EXPR must raise an Myxo failure
   // expect EXPR to fail with STRING — ...and its message must contain STRING
   // `is` / `to` / `with` are contextual here, not reserved words.
   parseExpect() {
@@ -356,17 +356,17 @@ class Parser {
     return { type: 'Match', subject, arms, line: kw.line, matchEnd: close.line };
   }
 
-  // Patterns are LINEAR: a name may bind at most once per arm. Nx has no non-linear/equality patterns,
+  // Patterns are LINEAR: a name may bind at most once per arm. Myxo has no non-linear/equality patterns,
   // so `[x, x]` is a mistake — reject it instead of silently last-winning the second binding.
   assertLinear(pat, seen, line) {
     switch (pat.type) {
       case 'PBind':
-        if (seen.has(pat.name)) throw new NxError(`pattern binds '${pat.name}' more than once`, line);
+        if (seen.has(pat.name)) throw new MyxoError(`pattern binds '${pat.name}' more than once`, line);
         seen.add(pat.name); return;
       case 'PList':
         for (const e of pat.elements) this.assertLinear(e, seen, line);
         if (pat.rest) {
-          if (seen.has(pat.rest)) throw new NxError(`pattern binds '${pat.rest}' more than once`, line);
+          if (seen.has(pat.rest)) throw new MyxoError(`pattern binds '${pat.rest}' more than once`, line);
           seen.add(pat.rest);
         }
         return;
@@ -391,7 +391,7 @@ class Parser {
     }
     if (t.type === 'LBRACKET') return this.parseListPattern();
     if (t.type === 'LBRACE') return this.parseMeshPattern();
-    throw new NxError(`bad pattern: unexpected '${t.value ?? t.type}'`, t.line, t.col);
+    throw new MyxoError(`bad pattern: unexpected '${t.value ?? t.type}'`, t.line, t.col);
   }
 
   parseListPattern() {
@@ -423,10 +423,10 @@ class Parser {
         pairs.push({ key: t.value, pattern: this.parsePattern() });
       } else if (t.type === 'IDENT') {           // shorthand:  { name }  ==  { "name": name }
         this.next();
-        if (this.peek().type === 'COLON') throw new NxError(`mesh pattern keys are strings — write "${t.value}": pattern, or just ${t.value} to bind`, t.line, t.col);
+        if (this.peek().type === 'COLON') throw new MyxoError(`mesh pattern keys are strings — write "${t.value}": pattern, or just ${t.value} to bind`, t.line, t.col);
         pairs.push({ key: t.value, pattern: { type: 'PBind', name: t.value } });
       } else {
-        throw new NxError(`a mesh pattern key must be a "string" or a name, got '${t.value ?? t.type}'`, t.line, t.col);
+        throw new MyxoError(`a mesh pattern key must be a "string" or a name, got '${t.value ?? t.type}'`, t.line, t.col);
       }
       if (this.peek().type === 'COMMA') { this.next(); continue; }
       break;
@@ -441,7 +441,7 @@ class Parser {
     if (this.peek().type === 'ASSIGN') {
       this.next();
       if (expr.type !== 'Identifier' && expr.type !== 'Index') {
-        throw new NxError('can only assign to a pathway or an indexed slot', line);
+        throw new MyxoError('can only assign to a pathway or an indexed slot', line);
       }
       const value = this.parseExpression();
       return { type: 'Assign', target: expr, value, line };
@@ -512,7 +512,7 @@ class Parser {
       this.next();
       const call = this.parsePostfix();
       if (!call || call.type !== 'Call') {
-        throw new NxError("dispatch needs an agent call, e.g. dispatch work(x)", t.line, t.col);
+        throw new MyxoError("dispatch needs an agent call, e.g. dispatch work(x)", t.line, t.col);
       }
       return { type: 'Dispatch', call, line: t.line };
     }
@@ -525,7 +525,7 @@ class Parser {
       this.next();
       const call = this.parsePostfix();
       if (!call || call.type !== 'Call') {
-        throw new NxError("spawn needs an agent call, e.g. spawn worker(ch)", t.line, t.col);
+        throw new MyxoError("spawn needs an agent call, e.g. spawn worker(ch)", t.line, t.col);
       }
       return { type: 'Spawn', call, line: t.line };
     }
@@ -588,7 +588,7 @@ class Parser {
     if (t.type === 'LBRACKET') return this.parseList();
     if (t.type === 'LBRACE') return this.parseMesh();
 
-    throw new NxError(`unexpected '${t.value ?? t.type}'`, t.line, t.col);
+    throw new MyxoError(`unexpected '${t.value ?? t.type}'`, t.line, t.col);
   }
 
   parseAgentExpr() {
@@ -642,7 +642,7 @@ class Parser {
 function parseFragment(src, line) {
   const p = new Parser(tokenize(src));
   const expr = p.parseExpression();
-  if (!p.atEnd()) throw new NxError(`bad expression in interpolation: '${src}'`, line);
+  if (!p.atEnd()) throw new MyxoError(`bad expression in interpolation: '${src}'`, line);
   offsetLines(expr, line - 1);   // fragment tokens count from line 1 — shift them onto the template's real source line
   return expr;
 }

@@ -1,0 +1,75 @@
+# physarum.myx — the slime mold's law, run properly, in the language named after it.
+#
+# Physarum polycephalum has no brain, yet it rebuilds the Tokyo rail network:
+# it floods every route, then each tube THICKENS with the flow it carries and
+# THINS continuously on its own. Useful paths reinforce; the rest decay and
+# vanish. Tero (2010) showed the network's character is set by HOW flow feeds
+# back into a tube: sharp feedback (flow squared) → one winner survives (lean);
+# soft feedback (sqrt of flow) → the detours stay alive as backups (resilient).
+# One organism, one dial. Myxo's old mesh did a toy version (+1 per read, manual
+# prune); this is the real dynamic, and the dial is passed in as a function.
+#
+# Run:  node myxo.js examples/physarum.myx
+
+# Two food sources (A, B). Each reachable by a short DIRECT route and a longer
+# DETOUR. Shorter tubes conduct more flow, so direct routes win — but how hard
+# they win depends entirely on the feedback shape.
+seed len   = { "A.direct": 1, "A.detour": 3, "B.direct": 1, "B.detour": 4 }
+seed dest  = { "A.direct": "A", "A.detour": "A", "B.direct": "B", "B.detour": "B" }
+seed dests = ["A", "B"]
+seed REINFORCE = 0.9
+seed FADE = 0.92            # gentle continuous decay — same for both runs
+
+agent fresh() {
+  report { "A.direct": 1, "A.detour": 1, "B.direct": 1, "B.detour": 1 }
+}
+
+# One forage cycle. `shape` is the feedback law — the dial Tero found.
+# Flow splits across a destination's routes by conductance (strength / length);
+# each tube thickens by REINFORCE * shape(flow); then EVERY tube thins by FADE.
+agent step(cond, shape) {
+  for each d in dests {
+    seed total = 0
+    for each r in keys(cond) {
+      when dest[r] == d { total = total + (cond[r] / len[r]) }
+    }
+    for each r in keys(cond) {
+      when dest[r] == d {
+        seed flow = (cond[r] / len[r]) / total
+        cond[r] = cond[r] + REINFORCE * shape(flow)
+      }
+    }
+  }
+  for each r in keys(cond) { cond[r] = cond[r] * FADE }
+  report cond
+}
+
+# Run the network to rest, then show each tube's share of its destination.
+agent simulate(shape, cycles, label) {
+  seed cond = fresh()
+  seed t = 0
+  reinforce t < cycles {
+    cond = step(cond, shape)
+    t = t + 1
+  }
+  emit ""
+  emit label
+  for each d in dests {
+    seed tot = 0
+    for each r in keys(cond) { when dest[r] == d { tot = tot + cond[r] } }
+    for each r in keys(cond) {
+      when dest[r] == d {
+        seed pct = floor(cond[r] / tot * 100)
+        seed mark = "pruned"
+        when pct >= 20 { mark = "ALIVE" }
+        emit "  " + r + "   " + str(pct) + "% of route to " + d + "   [" + mark + "]"
+      }
+    }
+  }
+}
+
+emit "Physarum routing in Myxo — same forage, one dial (the feedback shape):"
+simulate(agent(q) { report q * q }, 18, "[ LEAN — sharp feedback (flow squared) ]  one winner, detours starve:")
+simulate(agent(q) { report sqrt(q) }, 18, "[ RESILIENT — soft feedback (sqrt flow) ]  detours kept as live backups:")
+emit ""
+emit "Brainless. One rule. Efficiency or fault-tolerance, by a single dial — exactly what Tero found."

@@ -11,7 +11,7 @@ const { execFileSync } = require('child_process');
 const { formatSource } = require('../format');
 const { parse } = require('../parser');
 
-test('formatSource prints canonical Nx from the AST', () => {
+test('formatSource prints canonical Myxo from the AST', () => {
   const src = 'needs spend(max 5,total 15)\nagent fib(n){when n<2{report n}report fib(n-1)+fib(n-2)}\nemit fib(5)';
   assert.equal(formatSource(src), [
     'needs spend(max 5, total 15)',
@@ -80,10 +80,10 @@ test('formatSource with dropComments strips comments', () => {
 
 test('CLI fmt --write preserves comments by default; --drop-comments strips them', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nx-fmt-'));
-  const file = path.join(dir, 'a.nx');
+  const file = path.join(dir, 'a.myx');
   fs.writeFileSync(file, '# keep me\nemit 1');
-  execFileSync(process.execPath, [path.join(__dirname, '..', 'nx.js'), 'fmt', file, '--write'], { encoding: 'utf8' });
+  execFileSync(process.execPath, [path.join(__dirname, '..', 'myxo.js'), 'fmt', file, '--write'], { encoding: 'utf8' });
   assert.equal(fs.readFileSync(file, 'utf8'), '# keep me\nemit 1\n');           // comment kept
-  execFileSync(process.execPath, [path.join(__dirname, '..', 'nx.js'), 'fmt', file, '--write', '--drop-comments'], { encoding: 'utf8' });
+  execFileSync(process.execPath, [path.join(__dirname, '..', 'myxo.js'), 'fmt', file, '--write', '--drop-comments'], { encoding: 'utf8' });
   assert.equal(fs.readFileSync(file, 'utf8'), 'emit 1\n');                      // explicitly stripped
 });

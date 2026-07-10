@@ -1,0 +1,31 @@
+# agent.myx — a script you'd hand an autonomous agent. It declares exactly what it
+# may touch AND how far it may go; the host fences everything else, and every
+# privileged move is logged.
+
+needs lookup, notify, spend(max 5)   # may look up + notify freely, may spend at most 5
+
+seed lead = lookup("vallartas")
+notify("found: " + lead)
+
+# a small spend the script declared it may make -> allowed and logged
+attempt {
+  spend(3)
+} rescue err {
+  notify("spend blocked: " + err["message"])
+}
+
+# the SAME capability, over the declared cap -> refused by the runtime itself,
+# even though the host granted unlimited spend. The script can't exceed its word.
+attempt {
+  spend(1000000)
+} rescue err {
+  notify("over-cap blocked: " + err["message"])
+}
+
+# `purge` is granted by the host -- but this script never declared it in `needs`,
+# so the call is refused before it can run, and the attempt is recorded.
+attempt {
+  purge("everything")
+} rescue err {
+  notify("undeclared blocked: " + err["message"])
+}

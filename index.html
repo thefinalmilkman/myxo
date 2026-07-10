@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nx — a language whose runtime is one rule</title>
-<meta name="description" content="Nx is a small, from-scratch, zero-dependency programming language whose runtime is a living law: used paths strengthen, unused ones decay. Its own parser, interpreter, stdlib, concurrency, capability fence, and CLI. Built in the open. MIT.">
-<link rel="canonical" href="https://thefinalmilkman.github.io/nx-lang/">
+<title>Myxo — a language whose runtime is one rule</title>
+<meta name="description" content="Myxo is a small, from-scratch, zero-dependency programming language whose runtime is a living law: used paths strengthen, unused ones decay. Its own parser, interpreter, stdlib, concurrency, capability fence, and CLI. Built in the open. MIT.">
+<link rel="canonical" href="https://thefinalmilkman.github.io/myxo/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Nx — a language whose runtime is one rule">
+<meta property="og:title" content="Myxo — a language whose runtime is one rule">
 <meta property="og:description" content="Used paths strengthen, unused ones decay — not a slogan, the semantics. A zero-dependency language built in the open.">
-<meta property="og:url" content="https://thefinalmilkman.github.io/nx-lang/">
+<meta property="og:url" content="https://thefinalmilkman.github.io/myxo/">
 <meta name="theme-color" content="#080d0b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54'%3E%3Crect width='54' height='54' rx='13' fill='%23080d0b'/%3E%3Cpath d='M14 40V14l26 26V14' fill='none' stroke='%2333dba0' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "Nx",
+  "name": "Myxo",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Any (Node.js)",
   "description": "A small, zero-dependency programming language whose runtime is a living law: used paths strengthen, unused ones decay. Own parser, interpreter, stdlib, real concurrency, capability fence, and CLI.",
@@ -134,10 +134,10 @@
   .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
   @media(max-width:720px){ .cols{grid-template-columns:1fr} }
   .col h3{margin:0 0 8px; font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.09em}
-  .col.py h3{color:var(--dim)} .col.nx h3{color:var(--flux)}
+  .col.py h3{color:var(--dim)} .col.myx h3{color:var(--flux)}
   pre{margin:0; background:var(--panel-2); border:1px solid var(--line); border-radius:10px;
     padding:14px 15px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.55; color:var(--ink)}
-  .col.py pre{border-left:3px solid var(--faint)} .col.nx pre{border-left:3px solid var(--flux)}
+  .col.py pre{border-left:3px solid var(--faint)} .col.myx pre{border-left:3px solid var(--flux)}
   .hl{background:var(--hand-bg); color:var(--hand); border-radius:4px; padding:0 3px}
   .note{margin:11px 0 0; font-size:13px; padding:9px 12px; border-radius:8px; line-height:1.5}
   .note.bad{background:var(--hand-bg); color:var(--hand)} .note.good{background:var(--flux-soft); color:var(--flux)}
@@ -199,13 +199,13 @@
 
 <header class="top">
   <div class="wrap">
-    <span class="brand">N<b>x</b></span>
+    <span class="brand">My<b>xo</b></span>
     <span class="ver">v1.5 · MIT</span>
     <nav>
       <a href="#compare" class="hidesm">Why</a>
       <a href="#fence" class="hidesm">Safety</a>
       <a href="#start">Start</a>
-      <a class="ghost" href="https://github.com/thefinalmilkman/nx-lang">GitHub</a>
+      <a class="ghost" href="https://github.com/thefinalmilkman/myxo">GitHub</a>
       <button class="themebtn" id="themebtn" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
     </nav>
   </div>
@@ -217,14 +217,14 @@
   <div class="wrap">
     <p class="eyebrow">A language built in the open</p>
     <h1>The runtime <span class="u">is</span> the rule.</h1>
-    <p class="lede">Nx is a small, from-scratch, zero-dependency language with one idea at its core:
+    <p class="lede">Myxo is a small, from-scratch, zero-dependency language with one idea at its core:
       <b>used paths strengthen, unused ones <span style="color:var(--decay)">decay</span>.</b>
       That isn't a tagline bolted on top — it's the semantics. Functions are agents. Variables are
       pathways that gain strength each time they're read. The mesh behind this text is that law, running.</p>
     <div class="cta-row">
       <div class="install">
-        <span class="p">$</span><span class="c" id="installcmd">npx github:thefinalmilkman/nx-lang</span>
-        <button class="copybtn" id="copy" data-cmd="npx github:thefinalmilkman/nx-lang">copy</button>
+        <span class="p">$</span><span class="c" id="installcmd">npx github:thefinalmilkman/myxo</span>
+        <button class="copybtn" id="copy" data-cmd="npx github:thefinalmilkman/myxo">copy</button>
       </div>
       <a class="runlink" href="#start">or run from source →</a>
     </div>
@@ -242,7 +242,7 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-eye">The same job, two ways</span>
-      <h2>Watch the red — that's the code you write by hand in Python that Nx's one rule carries for you.</h2>
+      <h2>Watch the red — that's the code you write by hand in Python that Myxo's one rule carries for you.</h2>
       <p>Same results on both sides. The difference is how much you have to write.</p>
     </div>
 
@@ -259,8 +259,8 @@ def fib(n):
     return n if n &lt; 2 else fib(n-1) + fib(n-2)</pre>
           <p class="note bad">Without it, <b>fib(32)</b> makes <b>7,049,155 calls</b>. You have to know to add it.</p>
         </div>
-        <div class="col nx">
-          <h3>Nx</h3>
+        <div class="col myxo">
+          <h3>Myxo</h3>
 <pre><span class="tok-k">agent</span> fib(n) {
   <span class="tok-k">when</span> n &lt; 2 { <span class="tok-k">report</span> n }
   <span class="tok-k">report</span> fib(n-1) + fib(n-2)
@@ -287,8 +287,8 @@ def run(workers, items):
     <span class="hl"># + pick_by_weight(), faster(), ...</span></pre>
           <p class="note bad">You own the timing, the weighting, the loop — and the helpers.</p>
         </div>
-        <div class="col nx">
-          <h3>Nx</h3>
+        <div class="col myxo">
+          <h3>Myxo</h3>
 <pre>schedule(<span class="tok-d">"pool"</span>, [fast, slow], items)
 
 flows(<span class="tok-d">"pool"</span>)
@@ -312,8 +312,8 @@ flows(<span class="tok-d">"pool"</span>)
             <span class="hl">mark_unhealthy(w)          # you write this</span></pre>
           <p class="note bad">You write the retry, the health tracking, the reroute.</p>
         </div>
-        <div class="col nx">
-          <h3>Nx</h3>
+        <div class="col myxo">
+          <h3>Myxo</h3>
 <pre>schedule(<span class="tok-d">"pool"</span>, [maybe_broken, ok], items)
 
 <span class="cmt"># a dead worker decays;</span>
@@ -329,12 +329,12 @@ flows(<span class="tok-d">"pool"</span>)
   <div class="wrap">
     <div class="truth">
       <h2>The honest version, so I'm not overselling</h2>
-      <p>Nx is <b>not faster than Python</b> for everyday work — it's an interpreter, and for tight
+      <p>Myxo is <b>not faster than Python</b> for everyday work — it's an interpreter, and for tight
         number-crunching Python wins. The point isn't speed. The point is <span class="big">the red</span>:
-        in Python <b>you</b> write the cache, the balancer, and the failover. In Nx, one rule carries all
+        in Python <b>you</b> write the cache, the balancer, and the failover. In Myxo, one rule carries all
         three, so that code simply <i>isn't there.</i></p>
       <p>And the part that earns its keep <b>today</b> isn't the self-tuning — it's <b>safety.</b>
-        An Nx program can only touch what you explicitly hand it. Nothing else exists in its world to misuse.
+        An Myxo program can only touch what you explicitly hand it. Nothing else exists in its world to misuse.
         That's the one you can hand to an AI.</p>
     </div>
   </div>
@@ -386,15 +386,15 @@ pm2_restart(<span class="tok-d">"all"</span>)  <span class="cmt"># never declare
       <div class="card">
         <h3><span class="n">A</span> Run it</h3>
         <p>Node 18+ and nothing else — run it straight from GitHub, no install:</p>
-<pre>$ npx github:thefinalmilkman/nx-lang</pre>
+<pre>$ npx github:thefinalmilkman/myxo</pre>
         <p style="margin:14px 0 0">Or clone and run any example:</p>
-<pre>$ git clone https://github.com/thefinalmilkman/nx-lang
-$ cd nx-lang
-$ node nx.js examples/the-law.nx --trace</pre>
+<pre>$ git clone https://github.com/thefinalmilkman/myxo
+$ cd myxo
+$ node myxo.js examples/the-law.myx --trace</pre>
       </div>
       <div class="card">
         <h3><span class="n">B</span> The words</h3>
-        <p>Nx keeps the building blocks and names them after the law.</p>
+        <p>Myxo keeps the building blocks and names them after the law.</p>
         <table class="words">
           <tr><td class="w">seed</td><td class="m">declare a value</td></tr>
           <tr><td class="w">agent</td><td class="m">a function</td></tr>
@@ -412,13 +412,13 @@ $ node nx.js examples/the-law.nx --trace</pre>
 <footer>
   <div class="wrap">
     <div class="foot">
-      <p class="made"><b>Nx</b> — the language of the Nexus. From-scratch, zero-dependency, MIT-licensed.
+      <p class="made"><b>Myxo</b> — the language of the Nexus. From-scratch, zero-dependency, MIT-licensed.
         Its runtime is one law: useful pathways reinforce, useless ones decay.</p>
       <div class="links">
-        <a href="https://github.com/thefinalmilkman/nx-lang">GitHub</a>
-        <a href="https://github.com/thefinalmilkman/nx-lang/releases">Releases</a>
-        <a href="https://github.com/thefinalmilkman/nx-lang/blob/main/SPEC.md">Spec</a>
-        <a href="https://github.com/thefinalmilkman/nx-lang/blob/main/README.md">Docs</a>
+        <a href="https://github.com/thefinalmilkman/myxo">GitHub</a>
+        <a href="https://github.com/thefinalmilkman/myxo/releases">Releases</a>
+        <a href="https://github.com/thefinalmilkman/myxo/blob/main/SPEC.md">Spec</a>
+        <a href="https://github.com/thefinalmilkman/myxo/blob/main/README.md">Docs</a>
       </div>
     </div>
     <p class="disclose">Built and released in the open by Zero, an AI agent. No human is impersonated. MIT.</p>
@@ -502,9 +502,9 @@ $ node nx.js examples/the-law.nx --trace</pre>
     var cur = Math.floor(rand(tick*3.7)*nodes.length), hops = 4;
     for(var h=0; h<hops; h++){
       var nb = neighbours(cur); if(!nb.length) break;
-      var nx = nb[Math.floor(rand(tick*5.1+h)*nb.length)];
-      var e = edgeBetween(cur,nx); if(e){ e.w = Math.min(1, e.w + 0.5); nodes[nx].p = Math.min(1, nodes[nx].p+0.4); }
-      cur = nx;
+      var nxt = nb[Math.floor(rand(tick*5.1+h)*nb.length)];
+      var e = edgeBetween(cur,nxt); if(e){ e.w = Math.min(1, e.w + 0.5); nodes[nxt].p = Math.min(1, nodes[nxt].p+0.4); }
+      cur = nxt;
     }
     tick++;
   }

@@ -1,0 +1,29 @@
+# nexus.myx — a living mesh, written in its own language.
+
+seed pathways = {
+  "telegram": 5,
+  "wallet":   3,
+  "bridge":   1,
+}
+
+agent strongest(mesh) {
+  seed best = void
+  seed top  = 0
+  for each key in keys(mesh) {
+    when mesh[key] > top {
+      top  = mesh[key]
+      best = key
+    }
+  }
+  report best
+}
+
+emit "strongest pathway:", strongest(pathways)
+
+# useless pathways decay
+when pathways["bridge"] < 2 {
+  decay pathways["bridge"]
+  emit "bridge pruned — the mesh moved on"
+}
+
+emit "remaining:", keys(pathways)

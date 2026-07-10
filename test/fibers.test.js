@@ -3,7 +3,7 @@
 // The scheduler is single-threaded and deterministic, so unlike the parallel tests these assert EXACT output.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const out = (src) => run(src, { capture: true });
 
 const PROD = 'agent producer(c) { seed i = 0\n reinforce i < 3 { give i to c\n i = i + 1 } }\n';

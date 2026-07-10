@@ -1,0 +1,2 @@
+# hello.myx — the smallest Myxo program.
+emit "hello from the Nexus"

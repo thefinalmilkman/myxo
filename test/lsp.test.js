@@ -1,9 +1,9 @@
 'use strict';
-// lsp.test.js — the Nx language server: pure analysis core + JSON-RPC dispatch + stdio wire.
+// lsp.test.js — the Myxo language server: pure analysis core + JSON-RPC dispatch + stdio wire.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { PassThrough } = require('stream');
-const L = require('../nx-lsp');
+const L = require('../myxo-lsp');
 
 // ---- pure analysis ----
 test('diagnostics: clean source has none; a syntax error reports line/col/message', () => {
@@ -52,29 +52,29 @@ test('initialize advertises hover, completion, and formatting', () => {
 
 test('didOpen/didChange publish diagnostics for the document', () => {
   const st = fresh();
-  const open = L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.nx', text: 'seed = bad' } } });
+  const open = L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.myx', text: 'seed = bad' } } });
   assert.equal(open.notifications[0].method, 'textDocument/publishDiagnostics');
   assert.equal(open.notifications[0].params.diagnostics.length, 1);
   assert.equal(open.notifications[0].params.diagnostics[0].severity, 1);
-  const chg = L.handle(st, { method: 'textDocument/didChange', params: { textDocument: { uri: 'f.nx' }, contentChanges: [{ text: 'seed n = 5' }] } });
+  const chg = L.handle(st, { method: 'textDocument/didChange', params: { textDocument: { uri: 'f.myx' }, contentChanges: [{ text: 'seed n = 5' }] } });
   assert.equal(chg.notifications[0].params.diagnostics.length, 0);    // fixed
 });
 
 test('hover/completion/formatting respond against the open document', () => {
   const st = fresh();
-  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.nx', text: 'seed x = 5\n' } } });   // canonical (trailing newline) so formatting yields no edits
-  const hov = L.handle(st, { id: 2, method: 'textDocument/hover', params: { textDocument: { uri: 'f.nx' }, position: { line: 0, character: 1 } } });
+  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.myx', text: 'seed x = 5\n' } } });   // canonical (trailing newline) so formatting yields no edits
+  const hov = L.handle(st, { id: 2, method: 'textDocument/hover', params: { textDocument: { uri: 'f.myx' }, position: { line: 0, character: 1 } } });
   assert.match(hov.response.result.contents.value, /bind a pathway/);
-  const comp = L.handle(st, { id: 3, method: 'textDocument/completion', params: { textDocument: { uri: 'f.nx' } } });
+  const comp = L.handle(st, { id: 3, method: 'textDocument/completion', params: { textDocument: { uri: 'f.myx' } } });
   assert.ok(comp.response.result.items.some(i => i.label === 'x'));
-  const fmt = L.handle(st, { id: 4, method: 'textDocument/formatting', params: { textDocument: { uri: 'f.nx' } } });
+  const fmt = L.handle(st, { id: 4, method: 'textDocument/formatting', params: { textDocument: { uri: 'f.myx' } } });
   assert.deepEqual(fmt.response.result, []);                          // already formatted -> no edits
 });
 
 test('formatting returns a whole-document TextEdit when reformatting is needed', () => {
   const st = fresh();
-  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.nx', text: 'seed   n=5' } } });
-  const fmt = L.handle(st, { id: 5, method: 'textDocument/formatting', params: { textDocument: { uri: 'f.nx' } } });
+  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'f.myx', text: 'seed   n=5' } } });
+  const fmt = L.handle(st, { id: 5, method: 'textDocument/formatting', params: { textDocument: { uri: 'f.myx' } } });
   assert.equal(fmt.response.result.length, 1);
   assert.equal(fmt.response.result[0].newText, 'seed n = 5\n');
 });
@@ -102,8 +102,8 @@ test('serve() frames JSON-RPC over stdio (Content-Length)', async () => {
 test('formatting PRESERVES comments (it reformats the code and keeps the comment)', () => {
   assert.equal(L.formatDoc('seed   n=5 # note\n'), 'seed n = 5  # note\n');   // no longer refuses — comments survive
   const st = fresh();
-  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'c.nx', text: 'seed   n=5 # note\n' } } });
-  const fmt = L.handle(st, { id: 7, method: 'textDocument/formatting', params: { textDocument: { uri: 'c.nx' } } });
+  L.handle(st, { method: 'textDocument/didOpen', params: { textDocument: { uri: 'c.myx', text: 'seed   n=5 # note\n' } } });
+  const fmt = L.handle(st, { id: 7, method: 'textDocument/formatting', params: { textDocument: { uri: 'c.myx' } } });
   assert.equal(fmt.response.result[0].newText, 'seed n = 5  # note\n');
 });
 

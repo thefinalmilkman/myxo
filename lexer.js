@@ -1,10 +1,10 @@
 'use strict';
-// lexer.js — turns Nx source text into a flat list of tokens.
+// lexer.js — turns Myxo source text into a flat list of tokens.
 // Each token carries its line and column so errors can point at the source.
 
-const { NxError } = require('./errors');
+const { MyxoError } = require('./errors');
 
-// The words that mean something structural in Nx. Everything else that looks
+// The words that mean something structural in Myxo. Everything else that looks
 // like a name is an identifier (a pathway or an agent).
 const KEYWORDS = new Set([
   'seed', 'decay', 'emit',
@@ -63,7 +63,7 @@ function tokenize(src, comments) {
   while (i < src.length) {
     const c = peek();
 
-    // Whitespace (including newlines — Nx is newline-insensitive).
+    // Whitespace (including newlines — Myxo is newline-insensitive).
     if (c === ' ' || c === '\t' || c === '\r' || c === '\n') { advance(); continue; }
 
     // Comments run from '#' to end of line. (Reached only OUTSIDE strings/interpolation — the string branch
@@ -126,13 +126,13 @@ function tokenize(src, comments) {
             if (e === '}') { depth--; advance(); if (depth === 0) break; exprSrc += '}'; continue; }
             exprSrc += advance();
           }
-          if (depth > 0) throw new NxError('unterminated { } interpolation in string', startLine, startCol);
+          if (depth > 0) throw new MyxoError('unterminated { } interpolation in string', startLine, startCol);
           segs.push({ t: 'expr', v: exprSrc });
           continue;
         }
         lit += advance();
       }
-      if (i >= src.length) throw new NxError('unterminated string', startLine, startCol);
+      if (i >= src.length) throw new MyxoError('unterminated string', startLine, startCol);
       advance(); // closing quote
       if (interpolated) {
         if (lit) segs.push({ t: 'lit', v: lit });
@@ -163,7 +163,7 @@ function tokenize(src, comments) {
     if (TWO_CHAR[two]) { advance(); advance(); push(TWO_CHAR[two], two, startLine, startCol); continue; }
     if (ONE_CHAR[c]) { advance(); push(ONE_CHAR[c], c, startLine, startCol); continue; }
 
-    throw new NxError(`unexpected character '${c}'`, startLine, startCol);
+    throw new MyxoError(`unexpected character '${c}'`, startLine, startCol);
   }
 
   push('EOF', null, line, col);

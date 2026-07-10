@@ -1,8 +1,8 @@
-# Nx Language Specification (v1.5)
+# Myxo Language Specification (v1.5)
 
-The precise, honest reference for Nx. Where this spec and the implementation disagree, that is a bug in one of them — file it. Scope notes mark, in plain language, what Nx does **not** do, so nothing here oversells.
+The precise, honest reference for Myxo. Where this spec and the implementation disagree, that is a bug in one of them — file it. Scope notes mark, in plain language, what Myxo does **not** do, so nothing here oversells.
 
-Nx is a small, embeddable, dynamically-typed language whose runtime *is* the Nexus law: useful pathways reinforce, useless ones decay. Reference implementation: a zero-dependency tree-walking interpreter in Node (`C:\Users\Milton\nx-lang\`).
+Myxo is a small, embeddable, dynamically-typed language whose runtime *is* the Nexus law: useful pathways reinforce, useless ones decay. Reference implementation: a zero-dependency tree-walking interpreter in Node (`C:\Users\Milton\myxo\`).
 
 ---
 
@@ -69,13 +69,13 @@ Precedence, lowest → highest:
 
 ## 5. Agents (functions)
 
-First-class lexical closures. **Parameters:** `name`, `name: Type`, `name = default`, `name: Type = default`, and a final `...rest` (gathers remaining args into a list). Defaults evaluate in call scope and may reference earlier parameters. Arity is checked (too few required / too many without `...rest` → error). `report` returns; falling off the end returns `void`. A recursion-depth guard (default 500) turns runaway recursion into a clean Nx error; a runaway loop can be bounded by a `maxSteps` fuel option.
+First-class lexical closures. **Parameters:** `name`, `name: Type`, `name = default`, `name: Type = default`, and a final `...rest` (gathers remaining args into a list). Defaults evaluate in call scope and may reference earlier parameters. Arity is checked (too few required / too many without `...rest` → error). `report` returns; falling off the end returns `void`. A recursion-depth guard (default 500) turns runaway recursion into a clean Myxo error; a runaway loop can be bounded by a `maxSteps` fuel option.
 
 ---
 
 ## 6. The capability fence (the moat)
 
-The host grants natives via the embed API; an Nx script reaches the outside world **only** through them. Enforced at every native call:
+The host grants natives via the embed API; an Myxo script reaches the outside world **only** through them. Enforced at every native call:
 
 - **Manifest** — `needs lookup, notify` declares what the script may call. Calling an undeclared capability is **refused even if the host granted it**. With no `needs`, all granted natives are allowed (trusted top-level); a host may set `requireManifest` to demand a manifest first. A `weave`d strand's own `needs` merges into the **one program-wide** manifest — a module can widen the whole script's reach, so weave only trusted strands.
 - **Value budgets** — `needs spend(max 5, total 15)`: `max` caps a single call's numeric first argument; `total` caps cumulative spend. For a non-numeric first argument, `total` counts **calls**. A negative/non-finite numeric budget argument is refused. Only successful calls count toward `total`.
@@ -88,7 +88,7 @@ The host grants natives via the embed API; an Nx script reaches the outside worl
 
 ## 7. Modules
 
-`weave "strand.nx"` loads a file once (cached, cycle-safe), importing its `expose`d names flatly; `weave "strand.nx" as m` namespaces them into a mesh `m["name"]`. Private by default. `weave` is itself fenced: a host that withholds the module loader disables it entirely.
+`weave "strand.myx"` loads a file once (cached, cycle-safe), importing its `expose`d names flatly; `weave "strand.myx" as m` namespaces them into a mesh `m["name"]`. Private by default. `weave` is itself fenced: a host that withholds the module loader disables it entirely.
 
 ---
 
@@ -111,21 +111,21 @@ Patterns are **linear**: a name may bind at most once per arm (a repeated name i
 
 ---
 
-## 10. The test runner (`nx test`)
+## 10. The test runner (`myxo test`)
 
-`test "name" { ... }` runs only under `nx test` / `runTests` (inert in a normal run). Inside, `expect`:
+`test "name" { ... }` runs only under `myxo test` / `runTests` (inert in a normal run). Inside, `expect`:
 
 - `expect e` — `e` must be live (an uncalled agent/native is rejected: "did you forget to call it?").
 - `expect a is b` / `a is not b` — deep structural equality.
 - `expect e to fail` / `to fail with "substr"` — `e` must raise an **intentional** failure (a `fail`, or a fence/budget denial); an incidental runtime error makes the test *error*, not pass.
 
-A test with zero expectations, a `report` in its body, or a runtime error is a failure. `node nx.js test <file|dir>` reports per-test, exits non-zero on any failure or if no tests ran. `nx test` runs **strict** (§11) by default.
+A test with zero expectations, a `report` in its body, or a runtime error is a failure. `node myxo.js test <file|dir>` reports per-test, exits non-zero on any failure or if no tests ran. `myxo test` runs **strict** (§11) by default.
 
 ---
 
 ## 11. Gradual types
 
-Optional annotations: `seed n: Type = v`, `agent f(x: Type = d, ...rest): Type`. Types: `number string bool list mesh agent void any` (`any` always matches). **Off by default** — a normal run ignores annotations and stays dynamic. Under **`--strict`** (and `nx test`), annotations are enforced as **runtime contracts** at four boundaries: seed-init, parameter (at the call), return, and **reassignment** of a typed binding.
+Optional annotations: `seed n: Type = v`, `agent f(x: Type = d, ...rest): Type`. Types: `number string bool list mesh agent void any` (`any` always matches). **Off by default** — a normal run ignores annotations and stays dynamic. Under **`--strict`** (and `myxo test`), annotations are enforced as **runtime contracts** at four boundaries: seed-init, parameter (at the call), return, and **reassignment** of a typed binding.
 
 **Honest scope:** this is runtime contract-checking, **not** static type inference — no unions, no generics, no flow analysis. Containers are not element-typed (`list` means "any list"). Grammar: `:` introduces a type, `=` a default.
 
@@ -148,7 +148,7 @@ The **polyglot** verbs are host-installed natives, governed by the §6 fence; **
 
 **Errors.** A task that `fail`s, throws, or errors at runtime surfaces promptly as a single `gather: <message>` (first error wins; all-or-nothing, like `Promise.all`). A true hard worker death (OOM/kill) is caught by a wall-clock timeout (default 30s). A `gather` is never memoized (spawning threads is an effect).
 
-**Mechanism & limits.** Zero new dependencies — the same worker + `Atomics` + `SharedArrayBuffer` barrier as `nx-live`; the interpreter runs at native speed inside a worker (measured). See `CONCURRENCY.md`. Limits, on purpose: one worker per task (no pool), self-contained agents only (no calls to *other* user agents from inside a task), and no inter-task channels — coordination is by structure (dispatch → gather), not message-passing. This is OS-thread parallelism, not cooperative coroutines.
+**Mechanism & limits.** Zero new dependencies — the same worker + `Atomics` + `SharedArrayBuffer` barrier as `myxo-live`; the interpreter runs at native speed inside a worker (measured). See `CONCURRENCY.md`. Limits, on purpose: one worker per task (no pool), self-contained agents only (no calls to *other* user agents from inside a task), and no inter-task channels — coordination is by structure (dispatch → gather), not message-passing. This is OS-thread parallelism, not cooperative coroutines.
 
 **The Physarum scheduler.** `schedule(name, workers, items)` lifts `route` (the slime-mold selector, §12) to parallel batches: a **named, persistent pool** of interchangeable worker-agents (`worker(chunk) -> results`, batch in/out) over which a batch is distributed **proportional to conductance** (the same credit + explore-floor as `route`, with the credit persisted on the pool so trailing/recovered workers are still sampled across small batches), run on real worker threads **in parallel**, and reassembled at each item's original index. Each worker's conductance is updated from its **measured per-item speed** (EWMA, `quality = 1 + 8/(ms+1)`): fast workers pull more flux on later calls, a worker that errors decays and **its items reroute to the survivors** (single-tier failover; if all fail, `schedule` throws — never partial). `flows(name)` shows the learned conductances (for routers and pools alike). `schedule` is never memoized. The data boundary and isolation are exactly `gather`'s (items/results are plain data; no shared state — which is what makes the distribution race-free). Honest scope: adaptation is across calls (explore then exploit), timing is nondeterministic (the *invariants* — every item once, in order, faster-worker-ends-higher — are not), constants are hand-tuned and exploit-leaning. This is the living mesh applied to execution: the language becomes the scheduler.
 
@@ -164,18 +164,18 @@ Every pathway carries a strength; **reading reinforces it**. `strength(name)` in
 
 ## 15. Errors
 
-One error type (`NxError`) carries a message, a source line, and — when it crossed agent calls — a stack trace (innermost first, truncated when deep). `attempt`/`rescue` catches Nx errors (not internal control signals, not assertion failures). A raw JS stack overflow is converted to a clean Nx error.
+One error type (`MyxoError`) carries a message, a source line, and — when it crossed agent calls — a stack trace (innermost first, truncated when deep). `attempt`/`rescue` catches Myxo errors (not internal control signals, not assertion failures). A raw JS stack overflow is converted to a clean Myxo error.
 
 ---
 
 ## 16. CLI & embedding
 
-- **CLI:** `node nx.js file.nx` (run) · `--trace` (print the mesh after) · `--strict` (enforce types) · `node nx.js` (multi-line REPL) · `nx fmt <file> [--check|--write|--drop-comments]` (AST formatter, one true style; **comments are preserved** — collected from the real lexer and re-attached by line, statement-granular; `--drop-comments` strips them) · `nx test <file|dir>` · `nx lsp` (stdio language server) · `nx plan <file>` (capability preview — see below).
-- **`nx plan` (fence approval surface):** statically reports what host capabilities a script DECLARES (`needs`) vs what it REFERENCES, flagging referenced-but-undeclared (the fence would deny) and declared-but-unused (over-grant). Exit `0` clean / `1` not-clean / `2` couldn't analyze. It is a **best-effort preview, NOT a sound gate**: scope-aware over direct call-sites, but it cannot statically distinguish a host capability from a same-named user agent, nor follow a capability passed as a value / via `weave` — so it discloses these blind spots and defers to the **runtime fence** as the actual boundary. Use it to see intent and catch mistakes; never approve on it alone.
-- **Embed:** `require('./nx').run(src, opts)` and `runTests(src, opts)`. `opts`: `capture`, `output`, `natives` (host bridge), `mcp` (an MCP client → every tool becomes a fenced capability), `moduleLoader` (`null` fences `weave`), `dir`, `maxDepth`, `maxSteps`, `requireManifest`, `promoteAt` (memoization threshold; `1e9` disables), `strict`, `onAudit`. Production hosts: `nx-run.js` (host allowlist) and `nx-live.js` (sync-over-async worker bridge for async tools).
+- **CLI:** `node myxo.js file.myx` (run) · `--trace` (print the mesh after) · `--strict` (enforce types) · `node myxo.js` (multi-line REPL) · `myxo fmt <file> [--check|--write|--drop-comments]` (AST formatter, one true style; **comments are preserved** — collected from the real lexer and re-attached by line, statement-granular; `--drop-comments` strips them) · `myxo test <file|dir>` · `myxo lsp` (stdio language server) · `myxo plan <file>` (capability preview — see below).
+- **`myxo plan` (fence approval surface):** statically reports what host capabilities a script DECLARES (`needs`) vs what it REFERENCES, flagging referenced-but-undeclared (the fence would deny) and declared-but-unused (over-grant). Exit `0` clean / `1` not-clean / `2` couldn't analyze. It is a **best-effort preview, NOT a sound gate**: scope-aware over direct call-sites, but it cannot statically distinguish a host capability from a same-named user agent, nor follow a capability passed as a value / via `weave` — so it discloses these blind spots and defers to the **runtime fence** as the actual boundary. Use it to see intent and catch mistakes; never approve on it alone.
+- **Embed:** `require('./myxo').run(src, opts)` and `runTests(src, opts)`. `opts`: `capture`, `output`, `natives` (host bridge), `mcp` (an MCP client → every tool becomes a fenced capability), `moduleLoader` (`null` fences `weave`), `dir`, `maxDepth`, `maxSteps`, `requireManifest`, `promoteAt` (memoization threshold; `1e9` disables), `strict`, `onAudit`. Production hosts: `myxo-run.js` (host allowlist) and `myxo-live.js` (sync-over-async worker bridge for async tools).
 
 ---
 
 ## 17. Not in v1.0 (honest)
 
-Worker-thread parallelism (`dispatch`/`gather`/`schedule`) and cooperative concurrency (fibers + channels) both ship (§13). Still designed-but-not-built (see `VISION.md`): channel `select`/timeouts/closeable channels, suspension across called-agent boundaries, a thread-reuse worker **pool**, multi-tier failover, a bytecode VM / non-Node runtime, static type inference, element-typed containers, and a non-Node embedding wire. (`nx fmt` now preserves comments, statement-granular — a comment trailing a one-line block or inside an inline `agent(){}` may shift to its own line, but none are dropped.) This spec describes only what ships today.
+Worker-thread parallelism (`dispatch`/`gather`/`schedule`) and cooperative concurrency (fibers + channels) both ship (§13). Still designed-but-not-built (see `VISION.md`): channel `select`/timeouts/closeable channels, suspension across called-agent boundaries, a thread-reuse worker **pool**, multi-tier failover, a bytecode VM / non-Node runtime, static type inference, element-typed containers, and a non-Node embedding wire. (`myxo fmt` now preserves comments, statement-granular — a comment trailing a one-line block or inside an inline `agent(){}` may shift to its own line, but none are dropped.) This spec describes only what ships today.

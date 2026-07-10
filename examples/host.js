@@ -5,9 +5,9 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 
-const src = fs.readFileSync(path.join(__dirname, 'agent.nx'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, 'agent.myx'), 'utf8');
 
 let ledger = [];
 run(src, {

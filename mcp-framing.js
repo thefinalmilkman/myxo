@@ -1,8 +1,8 @@
 'use strict';
 // mcp-framing.js — newline-delimited JSON message framing for the MCP wire.
 //
-// The provider-side companion to mcp-bridge.js (which bridges tools INTO Nx as
-// fenced capabilities). This is the transport plumbing for Nx to SERVE tools over
+// The provider-side companion to mcp-bridge.js (which bridges tools INTO Myxo as
+// fenced capabilities). This is the transport plumbing for Myxo to SERVE tools over
 // MCP: one JSON-RPC value per line. JSON.stringify never emits a raw newline, so
 // '\n' is a safe delimiter both ways (server<->client) over stdio.
 

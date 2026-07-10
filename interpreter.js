@@ -2,7 +2,7 @@
 // interpreter.js — walks the AST and makes it happen.
 // Holds the Environment (where the Nexus law lives) and the host bridge.
 
-const { NxError, NxAssertError } = require('./errors');
+const { MyxoError, NxAssertError } = require('./errors');
 
 // The single void value. Anything missing or unreported is this.
 const VOID = Symbol('void');
@@ -67,7 +67,7 @@ class Environment {
 
   get(name, line) {
     const f = this.lookup(name);
-    if (!f) throw new NxError(`unknown pathway '${name}'`, line);
+    if (!f) throw new MyxoError(`unknown pathway '${name}'`, line);
     f.entry.strength++; // useful pathways reinforce
     return f.entry.value;
   }
@@ -76,14 +76,14 @@ class Environment {
     for (let env = this; env; env = env.parent) {
       if (env.vars.has(name)) { env.vars.get(name).value = value; return; }
     }
-    throw new NxError(`cannot assign to unknown pathway '${name}' — seed it first`, line);
+    throw new MyxoError(`cannot assign to unknown pathway '${name}' — seed it first`, line);
   }
 
   remove(name, line) {
     for (let env = this; env; env = env.parent) {
       if (env.vars.has(name)) { env.vars.delete(name); return; }
     }
-    throw new NxError(`cannot decay unknown pathway '${name}'`, line);
+    throw new MyxoError(`cannot decay unknown pathway '${name}'`, line);
   }
 }
 
@@ -179,12 +179,12 @@ class Interpreter {
     this.fibers = [];                  // all spawned fibers (for drain/deadlock detection) — cooperative concurrency
     this.ready = [];                   // the cooperative scheduler's run queue: { fiber, val? }
     this.strict = !!opts.strict;       // `--strict` enforces gradual-type annotations as runtime contracts
-    this.testMode = !!opts.testMode;   // `nx test` flips this on; otherwise `test` blocks are inert
+    this.testMode = !!opts.testMode;   // `myxo test` flips this on; otherwise `test` blocks are inert
     this.testResults = [];             // collected { name, ok, error } from test blocks
     this.inTest = null;                // the active test record while a test body runs
   }
 
-  // Install a native (host) function callable from Nx. The bridge to the Nexus.
+  // Install a native (host) function callable from Myxo. The bridge to the Nexus.
   registerNative(name, fn, capability = false, meter = 'count') {
     if (meter === 'value') this.valueCaps.add(name);   // host declares this cap is metered by value, not call-count
     this.globals.define(name, { __native: true, name, fn, capability }, true);
@@ -207,9 +207,9 @@ class Interpreter {
       if (this.fibers.length) { this.pump(); this.checkAllFibersDone(); }
       return result;
     } catch (e) {
-      // never let a raw JS stack overflow reach the user — make it Nx's own error.
+      // never let a raw JS stack overflow reach the user — make it Myxo's own error.
       if (e instanceof RangeError && /call stack/i.test(e.message)) {
-        throw new NxError('call stack went too deep — runaway recursion?');
+        throw new MyxoError('call stack went too deep — runaway recursion?');
       }
       throw e;
     } finally {
@@ -224,7 +224,7 @@ class Interpreter {
     if (this.maxSteps === Infinity) return;
     this.steps++;
     if (this.steps > this.maxSteps) {
-      throw new NxError(`execution fuel exhausted after ${this.maxSteps} steps`, line);
+      throw new MyxoError(`execution fuel exhausted after ${this.maxSteps} steps`, line);
     }
   }
 
@@ -236,7 +236,7 @@ class Interpreter {
       case 'Seed': {
         const sv = this.eval(node.value, env);
         if (this.strict && node.declType && !typeMatches(node.declType, sv))
-          throw new NxError(`'${node.name}' expects ${node.declType}, got ${typeName(sv)}`, node.line);
+          throw new MyxoError(`'${node.name}' expects ${node.declType}, got ${typeName(sv)}`, node.line);
         if (env === this.globals && env.vars.has(node.name)) this.epoch++;  // redefining a global -> invalidate dependent caches
         env.define(node.name, sv, false, node.declType);   // carry the type so a later reassignment is also contract-checked
         return;
@@ -244,7 +244,7 @@ class Interpreter {
       case 'SeedDestructure': {
         const value = this.eval(node.value, env);
         const binds = this.matchPattern(node.pattern, value, env);
-        if (!binds) throw new NxError('destructuring pattern did not match the value', node.line);
+        if (!binds) throw new MyxoError('destructuring pattern did not match the value', node.line);
         if (env === this.globals) this.epoch++;   // global binding(s) changed -> invalidate dependent caches
         for (const k of Object.keys(binds)) env.define(k, binds[k]);
         return;
@@ -267,7 +267,7 @@ class Interpreter {
         return;
       case 'ReinforceTimes': {
         const n = this.eval(node.count, env);
-        if (typeof n !== 'number') throw new NxError(`reinforce ... times needs a number, got ${typeName(n)}`, node.line);
+        if (typeof n !== 'number') throw new MyxoError(`reinforce ... times needs a number, got ${typeName(n)}`, node.line);
         for (let k = 0; k < n; k++) this.execBlock(node.body, new Environment(env));
         return;
       }
@@ -277,7 +277,7 @@ class Interpreter {
         // either we're outside a fiber entirely, or we're inside one but on a non-suspendable sub-path (a CALLED
         // agent's body / an expression) — the scheduler can't suspend across that boundary. Be honest about which.
         const kw = node.type.toLowerCase();
-        throw new NxError(this.steppingFiber
+        throw new MyxoError(this.steppingFiber
           ? `'${kw}' can't be used inside a called agent — only in the fiber's own body (and inside when/match/for each/reinforce/attempt)`
           : `'${kw}' is only valid inside a spawned fiber`, node.line);
       }
@@ -291,7 +291,7 @@ class Interpreter {
         try { this.execBlock(node.tryBlock, new Environment(env)); }
         catch (e) {
           if (e instanceof ReportSignal) throw e;   // `report` still unwinds
-          if (!(e instanceof NxError)) throw e;      // real JS bugs propagate
+          if (!(e instanceof MyxoError)) throw e;      // real JS bugs propagate
           const m = new Map();
           m.set('message', e.message);
           m.set('line', typeof e.line === 'number' ? e.line : VOID);
@@ -304,7 +304,7 @@ class Interpreter {
       }
       case 'Fail': {
         const v = this.eval(node.value, env);
-        const err = new NxError(typeof v === 'string' ? v : stringify(v), node.line);
+        const err = new MyxoError(typeof v === 'string' ? v : stringify(v), node.line);
         err.nxFail = true;
         err.nxValue = v;
         throw err;
@@ -312,7 +312,7 @@ class Interpreter {
       case 'Weave': {
         if (this.frames.length) this.markImpure();   // module load can have side effects -> taint the calling agent
         const p = this.eval(node.path, env);
-        if (typeof p !== 'string') throw new NxError(`weave needs a string path, got ${typeName(p)}`, node.line);
+        if (typeof p !== 'string') throw new MyxoError(`weave needs a string path, got ${typeName(p)}`, node.line);
         const exports = this.weaveModule(p, node.line);
         if (node.alias) env.define(node.alias, new Map(exports));   // namespaced
         else for (const [k, v] of exports) env.define(k, v);        // flat
@@ -342,7 +342,7 @@ class Interpreter {
         return;   // no arm matched -> nothing runs (use `_` for a catch-all)
       }
       case 'Test': {
-        if (!this.testMode) return;   // test blocks are inert unless run via `nx test`
+        if (!this.testMode) return;   // test blocks are inert unless run via `myxo test`
         const rec = { name: node.name, ok: true, error: null, asserts: 0, line: node.line };
         const prev = this.inTest;
         this.inTest = rec;
@@ -352,7 +352,7 @@ class Interpreter {
         } catch (e) {
           if (e instanceof ReportSignal) { rec.ok = false; rec.error = "a test body cannot 'report' — it ends the test before its assertions"; }
           else if (e instanceof NxAssertError) { rec.ok = false; rec.error = e.message; }
-          else if (e instanceof NxError) { rec.ok = false; rec.error = 'errored: ' + e.message; }
+          else if (e instanceof MyxoError) { rec.ok = false; rec.error = 'errored: ' + e.message; }
           else throw e;   // a real JS bug aborts the run
         } finally {
           this.inTest = prev;
@@ -361,13 +361,13 @@ class Interpreter {
         return;
       }
       case 'Expect': {
-        if (!this.inTest) throw new NxError("'expect' is only valid inside a test block", node.line);
+        if (!this.inTest) throw new MyxoError("'expect' is only valid inside a test block", node.line);
         this.inTest.asserts++;
         const m = node.matcher;
         if (m.kind === 'fail' || m.kind === 'failwith') {
           let threw = null;
           try { this.eval(node.actual, env); }
-          catch (e) { if (e instanceof NxError) threw = e; else throw e; }   // report/JS-bug propagate
+          catch (e) { if (e instanceof MyxoError) threw = e; else throw e; }   // report/JS-bug propagate
           if (!threw) throw new NxAssertError('expected the expression to fail, but it succeeded', node.line);
           // Only an INTENTIONAL failure satisfies `to fail`: an explicit `fail`, or a fence/budget denial.
           // An incidental error (unknown pathway, bad arity, type error) re-throws -> the test ERRORS, never
@@ -375,7 +375,7 @@ class Interpreter {
           if (!threw.nxFail && !threw.nxFence) throw threw;
           if (m.kind === 'failwith') {
             const want = this.eval(m.expected, env);
-            if (typeof want !== 'string') throw new NxError("'to fail with' needs a string", node.line);
+            if (typeof want !== 'string') throw new MyxoError("'to fail with' needs a string", node.line);
             if (!String(threw.message).includes(want))
               throw new NxAssertError(`expected failure containing ${showv(want)}, got ${showv(threw.message)}`, node.line);
           }
@@ -398,7 +398,7 @@ class Interpreter {
         this.eval(node.expr, env);
         return;
       default:
-        throw new NxError(`cannot execute ${node.type}`, node.line);
+        throw new MyxoError(`cannot execute ${node.type}`, node.line);
     }
   }
 
@@ -433,7 +433,7 @@ class Interpreter {
         }
         return binds;
       }
-      default: throw new NxError(`unknown pattern type ${pat.type}`);
+      default: throw new MyxoError(`unknown pattern type ${pat.type}`);
     }
   }
 
@@ -450,7 +450,7 @@ class Interpreter {
           || (f.entry.value && (f.entry.value.__agent || f.entry.value.__native))
           || (value && (value.__agent || value.__native)))) this.epoch++;
       if (this.strict && f && f.entry.type && !typeMatches(f.entry.type, value))     // a typed binding stays typed on reassignment
-        throw new NxError(`'${t.name}' expects ${f.entry.type}, got ${typeName(value)}`, node.line);
+        throw new MyxoError(`'${t.name}' expects ${f.entry.type}, got ${typeName(value)}`, node.line);
       env.set(t.name, value, t.line); return;
     }
     // Index target: list[i] = v  or  mesh[k] = v
@@ -462,7 +462,7 @@ class Interpreter {
     } else if (obj instanceof Map) {
       obj.set(this.asKey(idx, node.line), value);
     } else {
-      throw new NxError(`cannot index a ${typeName(obj)}`, node.line);
+      throw new MyxoError(`cannot index a ${typeName(obj)}`, node.line);
     }
   }
 
@@ -484,7 +484,7 @@ class Interpreter {
     } else if (obj instanceof Map) {
       obj.delete(this.asKey(idx, node.line));
     } else {
-      throw new NxError(`cannot decay a slot of ${typeName(obj)}`, node.line);
+      throw new MyxoError(`cannot decay a slot of ${typeName(obj)}`, node.line);
     }
   }
 
@@ -494,7 +494,7 @@ class Interpreter {
     if (Array.isArray(it)) items = it.slice();
     else if (it instanceof Map) items = [...it.keys()];
     else if (typeof it === 'string') items = [...it];
-    else throw new NxError(`cannot walk a ${typeName(it)} with 'for each'`, node.line);
+    else throw new MyxoError(`cannot walk a ${typeName(it)} with 'for each'`, node.line);
     for (const item of items) {
       const child = new Environment(env);
       child.define(node.varName, item);
@@ -514,7 +514,7 @@ class Interpreter {
       case 'Void': return VOID;
       case 'Identifier': {
         const f = env.lookup(node.name);
-        if (!f) throw new NxError(`unknown pathway '${node.name}'`, node.line);
+        if (!f) throw new MyxoError(`unknown pathway '${node.name}'`, node.line);
         f.entry.strength++;                                       // the law: reads reinforce
         const fr = this.frames.length ? this.frames[this.frames.length - 1] : null;
         if (fr && fr.pure && !f.entry.system && !this.isLocalEnv(f.env, fr.root)) {
@@ -540,7 +540,7 @@ class Interpreter {
       case 'Gather': return this.evalGather(node, env);
       case 'Spawn': return this.evalSpawn(node, env);
       default:
-        throw new NxError(`cannot evaluate ${node.type}`, node.line);
+        throw new MyxoError(`cannot evaluate ${node.type}`, node.line);
     }
   }
 
@@ -548,7 +548,7 @@ class Interpreter {
     const v = this.eval(node.operand, env);
     if (node.op === 'not') return !truthy(v);
     if (node.op === '-') {
-      if (typeof v !== 'number') throw new NxError(`cannot negate a ${typeName(v)}`, node.line);
+      if (typeof v !== 'number') throw new MyxoError(`cannot negate a ${typeName(v)}`, node.line);
       return -v;
     }
   }
@@ -572,13 +572,13 @@ class Interpreter {
         return a + b;
       case '-': this.bothNumbers(a, b, node); return a - b;
       case '*': this.bothNumbers(a, b, node); return a * b;
-      case '/': this.bothNumbers(a, b, node); if (b === 0) throw new NxError('division by zero', node.line); return a / b;
-      case '%': this.bothNumbers(a, b, node); if (b === 0) throw new NxError('modulo by zero', node.line); return a % b;
+      case '/': this.bothNumbers(a, b, node); if (b === 0) throw new MyxoError('division by zero', node.line); return a / b;
+      case '%': this.bothNumbers(a, b, node); if (b === 0) throw new MyxoError('modulo by zero', node.line); return a % b;
       case '>': return this.compare(a, b, node) > 0;
       case '<': return this.compare(a, b, node) < 0;
       case '>=': return this.compare(a, b, node) >= 0;
       case '<=': return this.compare(a, b, node) <= 0;
-      default: throw new NxError(`unknown operator ${node.op}`, node.line);
+      default: throw new MyxoError(`unknown operator ${node.op}`, node.line);
     }
   }
 
@@ -597,7 +597,7 @@ class Interpreter {
       const i = this.asIndex(idx, obj.length, node.line, false);
       return obj[i];
     }
-    throw new NxError(`cannot index a ${typeName(obj)}`, node.line);
+    throw new MyxoError(`cannot index a ${typeName(obj)}`, node.line);
   }
 
   evalCall(node, env) {
@@ -622,10 +622,10 @@ class Interpreter {
   // nothing yet. The args must be plain data — a task crosses a thread boundary, where a closure can't follow.
   evalDispatch(node, env) {
     const agent = this.eval(node.call.callee, env);
-    if (!(agent && agent.__agent)) throw new NxError('dispatch needs an agent, e.g. dispatch work(x)', node.line);
+    if (!(agent && agent.__agent)) throw new MyxoError('dispatch needs an agent, e.g. dispatch work(x)', node.line);
     const args = node.call.args.map(a => this.eval(a, env));
-    const { assertSerializable } = require('./nx-concurrent');
-    args.forEach((a) => { try { assertSerializable(a, 'a dispatch argument'); } catch (e) { throw new NxError(e.message, node.line); } });
+    const { assertSerializable } = require('./myxo-concurrent');
+    args.forEach((a) => { try { assertSerializable(a, 'a dispatch argument'); } catch (e) { throw new MyxoError(e.message, node.line); } });
     return { __task: true, name: agent.name, params: agent.params, body: agent.body, args };
   }
 
@@ -634,17 +634,17 @@ class Interpreter {
   // cannot see or mutate the parent's pathways, which is exactly what makes parallel execution race-free.
   evalGather(node, env) {
     const list = this.eval(node.expr, env);
-    if (!Array.isArray(list)) throw new NxError('gather expects a list of dispatched tasks', node.line);
+    if (!Array.isArray(list)) throw new MyxoError('gather expects a list of dispatched tasks', node.line);
     if (this.frames.length) this.markImpure();                 // spawning threads is an effect -> never memoize a gather away
     const { nxToJs, jsToNx } = require('./polyglot');
     const tasks = list.map((h, i) => {
-      if (!(h && h.__task)) throw new NxError(`gather: item ${i} is not a dispatched task (use 'dispatch f(x)')`, node.line);
+      if (!(h && h.__task)) throw new MyxoError(`gather: item ${i} is not a dispatched task (use 'dispatch f(x)')`, node.line);
       return { name: h.name, params: h.params, body: h.body, args: h.args.map(a => nxToJs(a)) };
     });
-    const { runParallel } = require('./nx-concurrent');
+    const { runParallel } = require('./myxo-concurrent');
     let raw;
     try { raw = runParallel(tasks); }
-    catch (e) { throw new NxError('gather: ' + (e && e.message ? e.message : String(e)), node.line); }
+    catch (e) { throw new MyxoError('gather: ' + (e && e.message ? e.message : String(e)), node.line); }
     return raw.map(jsToNx);
   }
 
@@ -656,7 +656,7 @@ class Interpreter {
 
   evalSpawn(node, env) {
     const agent = this.eval(node.call.callee, env);
-    if (!(agent && agent.__agent)) throw new NxError('spawn needs an agent, e.g. spawn worker(ch)', node.line);
+    if (!(agent && agent.__agent)) throw new MyxoError('spawn needs an agent, e.g. spawn worker(ch)', node.line);
     const args = node.call.args.map(a => this.eval(a, env));
     if (this.frames.length) this.markImpure();                 // spawning a fiber is an effect -> never memoize it away
     return this.spawnFiber(agent, args, node.line);
@@ -666,8 +666,8 @@ class Interpreter {
     const params = agent.params;
     const hasRest = params.length > 0 && params[params.length - 1].rest;
     const required = params.filter(p => !p.rest && p.def == null).length;
-    if (args.length < required) throw new NxError(`agent ${agent.name} needs at least ${required} argument(s), got ${args.length}`, line);
-    if (!hasRest && args.length > params.length) throw new NxError(`agent ${agent.name} takes at most ${params.length} argument(s), got ${args.length}`, line);
+    if (args.length < required) throw new MyxoError(`agent ${agent.name} needs at least ${required} argument(s), got ${args.length}`, line);
+    if (!hasRest && args.length > params.length) throw new MyxoError(`agent ${agent.name} takes at most ${params.length} argument(s), got ${args.length}`, line);
     const local = new Environment(agent.closure);              // bind params exactly as callValue does
     let ai = 0;
     for (const p of params) {
@@ -679,7 +679,7 @@ class Interpreter {
       for (const p of params) {
         if (p.paramType && !p.rest) {
           const pv = local.vars.get(p.name).value;
-          if (!typeMatches(p.paramType, pv)) throw new NxError(`agent ${agent.name || 'anon'} param '${p.name}' expects ${p.paramType}, got ${typeName(pv)}`, line);
+          if (!typeMatches(p.paramType, pv)) throw new MyxoError(`agent ${agent.name || 'anon'} param '${p.name}' expects ${p.paramType}, got ${typeName(pv)}`, line);
         }
       }
     }
@@ -702,7 +702,7 @@ class Interpreter {
     switch (node.type) {
       case 'Give': {
         const ch = this.eval(node.channel, env);
-        if (!(ch && ch.__channel)) throw new NxError(`give needs a channel, got ${typeName(ch)}`, node.line);
+        if (!(ch && ch.__channel)) throw new MyxoError(`give needs a channel, got ${typeName(ch)}`, node.line);
         const value = this.eval(node.value, env);
         if (ch.recvW.length) { this.ready.push({ fiber: ch.recvW.shift(), val: value }); }   // hand straight to a waiting receiver
         else if (ch.buf.length < ch.cap) { ch.buf.push(value); }                              // room to buffer
@@ -711,7 +711,7 @@ class Interpreter {
       }
       case 'Take': {
         const ch = this.eval(node.channel, env);
-        if (!(ch && ch.__channel)) throw new NxError(`take needs a channel, got ${typeName(ch)}`, node.line);
+        if (!(ch && ch.__channel)) throw new MyxoError(`take needs a channel, got ${typeName(ch)}`, node.line);
         let value;
         if (ch.buf.length) {
           value = ch.buf.shift();
@@ -732,7 +732,7 @@ class Interpreter {
         return;
       case 'ReinforceTimes': {
         const n = this.eval(node.count, env);
-        if (typeof n !== 'number') throw new NxError(`reinforce ... times needs a number, got ${typeName(n)}`, node.line);
+        if (typeof n !== 'number') throw new MyxoError(`reinforce ... times needs a number, got ${typeName(n)}`, node.line);
         for (let k = 0; k < n; k++) yield* this.stepBlock(node.body, new Environment(env));
         return;
       }
@@ -742,7 +742,7 @@ class Interpreter {
         if (Array.isArray(it)) items = it.slice();
         else if (it instanceof Map) items = [...it.keys()];
         else if (typeof it === 'string') items = [...it];
-        else throw new NxError(`cannot walk a ${typeName(it)} with 'for each'`, node.line);
+        else throw new MyxoError(`cannot walk a ${typeName(it)} with 'for each'`, node.line);
         for (const item of items) {
           const child = new Environment(env);
           child.define(node.varName, item);
@@ -767,7 +767,7 @@ class Interpreter {
         try { yield* this.stepBlock(node.tryBlock, new Environment(env)); }
         catch (e) {
           if (e instanceof ReportSignal) throw e;
-          if (!(e instanceof NxError)) throw e;
+          if (!(e instanceof MyxoError)) throw e;
           const m = new Map();
           m.set('message', e.message);
           m.set('line', typeof e.line === 'number' ? e.line : VOID);
@@ -789,14 +789,14 @@ class Interpreter {
   // calling drain/await from inside a fiber would re-enter here and miscount the in-flight fiber as deadlocked.
   pump() {
     if (this.inScheduler) {
-      throw new NxError("the fiber scheduler is already running — 'await'/'drain' can't be called from inside a fiber (coordinate with channels or 'yield' instead)");
+      throw new MyxoError("the fiber scheduler is already running — 'await'/'drain' can't be called from inside a fiber (coordinate with channels or 'yield' instead)");
     }
     this.inScheduler = true;
     const cap = Number.isFinite(this.maxSteps) ? this.maxSteps : 10000000;   // bound a runaway (e.g. yield-forever) so it errors, never hangs
     let steps = 0;
     try {
       while (this.ready.length) {
-        if (++steps > cap) throw new NxError('fiber scheduler exceeded its step budget (runaway fibers?)');
+        if (++steps > cap) throw new MyxoError('fiber scheduler exceeded its step budget (runaway fibers?)');
         const { fiber, val } = this.ready.shift();
         if (fiber.done) continue;
         let r;
@@ -820,7 +820,7 @@ class Interpreter {
     const failed = this.fibers.find(f => f.error);
     if (failed) throw failed.error;
     const stuck = this.fibers.filter(f => !f.done);
-    if (stuck.length) throw new NxError(`${stuck.length} fiber(s) deadlocked — blocked on a channel with no one to unblock them`);
+    if (stuck.length) throw new MyxoError(`${stuck.length} fiber(s) deadlocked — blocked on a channel with no one to unblock them`);
   }
 
   callValue(callee, args, line) {
@@ -833,7 +833,7 @@ class Interpreter {
       // a host capability: enforce the manifest, then record the call in the audit ledger.
       const refuse = (error, msg) => {
         this.audit.push({ cap: callee.name, args: args.map(a => stringify(a)), ok: false, error });
-        const err = new NxError(msg, line);
+        const err = new MyxoError(msg, line);
         err.nxFence = true; throw err;   // a policy denial, not a transient failure — a router must NOT route around it
       };
       if (!this.manifest && this.requireManifest) {
@@ -902,12 +902,12 @@ class Interpreter {
         entry.ok = false; entry.error = msg;
         this.audit.push(entry);
         // A FAILING host capability must be rescuable in-script, exactly like a fence denial —
-        // `attempt { lookup(x) } rescue e { ... }` is the documented pattern (§15 catches NxError only).
+        // `attempt { lookup(x) } rescue e { ... }` is the documented pattern (§15 catches MyxoError only).
         // A raw JS error from the host (network refused, timeout, host bug) previously leaked through
         // attempt/rescue and killed the whole run — the lichen-sentry dogfood caught it: a DOWN brain
         // crashed the monitor instead of producing its ALERT verdict.
-        if (e instanceof NxError) throw e;
-        const wrapped = new NxError(`capability '${callee.name}' failed: ${msg}`, line);
+        if (e instanceof MyxoError) throw e;
+        const wrapped = new MyxoError(`capability '${callee.name}' failed: ${msg}`, line);
         // PRESERVE policy flags: command-fence's policyError throws a PLAIN Error with nxFence=true (a
         // denial a flow-router must NOT route around) — and nxFail marks an intentional failure. Stripping
         // them would let a router bypass a policy refusal and would break `expect ... to fail`. Carry them.
@@ -921,10 +921,10 @@ class Interpreter {
       const hasRest = params.length > 0 && params[params.length - 1].rest;
       const required = params.filter(p => !p.rest && p.def == null).length;
       if (args.length < required) {
-        throw new NxError(`agent ${callee.name} needs at least ${required} argument(s), got ${args.length}`, line);
+        throw new MyxoError(`agent ${callee.name} needs at least ${required} argument(s), got ${args.length}`, line);
       }
       if (!hasRest && args.length > params.length) {
-        throw new NxError(`agent ${callee.name} takes at most ${params.length} argument(s), got ${args.length}`, line);
+        throw new MyxoError(`agent ${callee.name} takes at most ${params.length} argument(s), got ${args.length}`, line);
       }
       // --- THE LIVING MESH: a hot agent's pathway PROMOTES (memoizes) ONLY where the runtime can prove it safe. ---
       // SOUND conditions, all required: (a) plain params only -> args fully determine the call (no default-expr to track
@@ -954,12 +954,12 @@ class Interpreter {
           if (p.paramType && !p.rest) {
             const pv = local.vars.get(p.name).value;
             if (!typeMatches(p.paramType, pv))
-              throw new NxError(`agent ${callee.name || 'anon'} param '${p.name}' expects ${p.paramType}, got ${typeName(pv)}`, line);
+              throw new MyxoError(`agent ${callee.name || 'anon'} param '${p.name}' expects ${p.paramType}, got ${typeName(pv)}`, line);
           }
         }
       }
       if (this.callStack.length >= this.maxDepth) {
-        throw new NxError(`call stack went too deep (over ${this.maxDepth}) — runaway recursion?`, line);
+        throw new MyxoError(`call stack went too deep (over ${this.maxDepth}) — runaway recursion?`, line);
       }
       this.callStack.push({ name: callee.name || 'anon', line });
       const frame = { root: local, pure: true };
@@ -972,7 +972,7 @@ class Interpreter {
         if (e instanceof ReportSignal) { result = e.value; completed = true; }
         else {
           // stamp the trace at the deepest agent the failure passes through, while every outer frame is still live.
-          if (e instanceof NxError && !e.nxStack) e.nxStack = this.callStack.slice();
+          if (e instanceof MyxoError && !e.nxStack) e.nxStack = this.callStack.slice();
           throw e;
         }
       } finally {
@@ -982,28 +982,28 @@ class Interpreter {
       }
       // cache only a clean, hot, primitive-result call, at the current epoch
       if (this.strict && callee.returnType && !typeMatches(callee.returnType, result))
-        throw new NxError(`agent ${callee.name || 'anon'} should return ${callee.returnType}, got ${typeName(result)}`, line);
+        throw new MyxoError(`agent ${callee.name || 'anon'} should return ${callee.returnType}, got ${typeName(result)}`, line);
       // cache only AFTER the return contract passes -> a violating result is never cached and every call errors
       if (completed && !rec.impure && argsPrim && isPrimitive(result) && rec.calls >= this.promoteAt && rec.cache.size < 50000) {
         rec.cache.set(keyOf(args), result);
       }
       return result;
     }
-    throw new NxError(`${typeName(callee)} is not an agent — cannot call it`, line);
+    throw new MyxoError(`${typeName(callee)} is not an agent — cannot call it`, line);
   }
 
   // ---- small typed helpers ------------------------------------------------
 
   bothNumbers(a, b, node) {
     if (typeof a !== 'number' || typeof b !== 'number') {
-      throw new NxError(`'${node.op}' needs two numbers, got ${typeName(a)} and ${typeName(b)}`, node.line);
+      throw new MyxoError(`'${node.op}' needs two numbers, got ${typeName(a)} and ${typeName(b)}`, node.line);
     }
   }
 
   compare(a, b, node) {
     if (typeof a === 'number' && typeof b === 'number') return a - b;
     if (typeof a === 'string' && typeof b === 'string') return a < b ? -1 : a > b ? 1 : 0;
-    throw new NxError(`cannot compare ${typeName(a)} and ${typeName(b)}`, node.line);
+    throw new MyxoError(`cannot compare ${typeName(a)} and ${typeName(b)}`, node.line);
   }
 
   equals(a, b) {
@@ -1014,11 +1014,11 @@ class Interpreter {
 
   asIndex(idx, length, line, allowAppend) {
     if (typeof idx !== 'number' || !Number.isInteger(idx)) {
-      throw new NxError(`index must be a whole number, got ${typeName(idx)}`, line);
+      throw new MyxoError(`index must be a whole number, got ${typeName(idx)}`, line);
     }
     const i = idx < 0 ? length + idx : idx; // negative indexes from the end
     if (i < 0 || i > length || (!allowAppend && i >= length)) {
-      throw new NxError(`index ${idx} is outside the list (length ${length})`, line);
+      throw new MyxoError(`index ${idx} is outside the list (length ${length})`, line);
     }
     return i;
   }
@@ -1026,20 +1026,20 @@ class Interpreter {
   asKey(idx, line) {
     if (typeof idx === 'string') return idx;
     if (typeof idx === 'number') return String(idx);
-    throw new NxError(`mesh keys must be strings or numbers, got ${typeName(idx)}`, line);
+    throw new MyxoError(`mesh keys must be strings or numbers, got ${typeName(idx)}`, line);
   }
 
   // weave a strand: load its AST via the host loader, run it in its OWN scope,
   // and return a mesh of the names it `expose`d. Loading is a granted capability
   // (no loader -> weaving is fenced). Modules are cached; cycles are caught.
   weaveModule(reqPath, line) {
-    if (!this.moduleLoader) throw new NxError(`weaving '${reqPath}' is not granted in this context`, line);
+    if (!this.moduleLoader) throw new MyxoError(`weaving '${reqPath}' is not granted in this context`, line);
     const fromDir = this.dirStack[this.dirStack.length - 1] || this.baseDir;
     let loaded;
     try { loaded = this.moduleLoader(reqPath, fromDir); }
-    catch (e) { throw new NxError(`cannot weave '${reqPath}': ${e.message}`, line); }
+    catch (e) { throw new MyxoError(`cannot weave '${reqPath}': ${e.message}`, line); }
     if (this.moduleCache.has(loaded.key)) return this.moduleCache.get(loaded.key);
-    if (this.moduleInProgress.has(loaded.key)) throw new NxError(`circular weave of '${reqPath}'`, line);
+    if (this.moduleInProgress.has(loaded.key)) throw new MyxoError(`circular weave of '${reqPath}'`, line);
     this.moduleInProgress.add(loaded.key);
     const modEnv = new Environment(this.globals);
     const exportSet = new Set();
@@ -1054,7 +1054,7 @@ class Interpreter {
     }
     const exports = new Map();
     for (const name of exportSet) {
-      if (!modEnv.vars.has(name)) throw new NxError(`'${name}' was exposed but never seeded in '${reqPath}'`, line);
+      if (!modEnv.vars.has(name)) throw new MyxoError(`'${name}' was exposed but never seeded in '${reqPath}'`, line);
       exports.set(name, modEnv.vars.get(name).value);
     }
     this.moduleCache.set(loaded.key, exports);

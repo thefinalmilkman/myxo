@@ -1,7 +1,7 @@
 'use strict';
-// receipt.js -- a tamper-evident RECEIPT over an Nx audit ledger.
+// receipt.js -- a tamper-evident RECEIPT over an Myxo audit ledger.
 //
-// An Nx run produces an audit array of { cap, args[], ok, error? } entries (every fenced capability call, allowed or
+// An Myxo run produces an audit array of { cap, args[], ok, error? } entries (every fenced capability call, allowed or
 // refused). This turns that ledger into a proof: a sha256 hash CHAIN (each entry commits the previous), SEALED with an
 // HMAC over {count, root} using a HOST-HELD key. In-place edits, reordering, and re-chaining change the root; dropping
 // or adding entries changes the count; and neither can be re-sealed without the key. So a saved/shared receipt can be

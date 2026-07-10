@@ -2,10 +2,10 @@
 // A FAILING host capability (network refused, host bug, timeout) must be rescuable in-script, exactly
 // like a fence denial. Found by the lichen-sentry dogfood (2026-07-02): a raw JS error thrown by a host
 // native leaked through attempt/rescue and killed the whole run — a DOWN brain crashed the monitor
-// instead of producing its ALERT verdict. interpreter.js now wraps non-NxError capability failures.
+// instead of producing its ALERT verdict. interpreter.js now wraps non-MyxoError capability failures.
 const { test } = require('node:test');
 const assert = require('node:assert');
-const nx = require('../nx');
+const nx = require('../myxo');
 
 const natives = {
   boom: () => { throw new Error('connect ECONNREFUSED 127.0.0.1:9999'); },
@@ -43,17 +43,17 @@ attempt { boom("x") } rescue e { }
   assert.match(entry.error, /ECONNREFUSED/);
 });
 
-test('unrescued, it surfaces as a clean NxError (never a raw stack)', () => {
+test('unrescued, it surfaces as a clean MyxoError (never a raw stack)', () => {
   let threw = null;
   try { nx.run('needs boom\nboom("x")', { capture: true, natives, requireManifest: true }); }
   catch (e) { threw = e; }
   assert.ok(threw, 'still an error when not rescued');
-  assert.equal(threw.constructor.name, 'NxError');
+  assert.equal(threw.constructor.name, 'MyxoError');
   assert.match(threw.message, /capability 'boom' failed/);
 });
 
 test('runScript returns PARTIAL OUTPUT when the script fails (evidence survives)', () => {
-  const { runScript } = require('../nx-run');
+  const { runScript } = require('../myxo-run');
   const r = runScript('needs boom\nemit "verdict: ALERT"\nboom("x")', {
     natives, requireManifest: true, moduleLoader: null,
   });

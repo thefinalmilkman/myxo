@@ -1,6 +1,6 @@
-# How Nx Works
+# How Myxo Works
 
-Nx has two jobs:
+Myxo has two jobs:
 
 1. Be an independent language with its own source files, runtime behavior, standard library,
    tooling, and release path.
@@ -8,15 +8,15 @@ Nx has two jobs:
    Python and Node, conditional bridges such as Perl when installed, and weaker executable/CLI
    bridges for compiled tools like C++, Rust, and Go binaries.
 
-Those jobs are separate on purpose. Nx can run by itself. Foreign languages extend it; they do
+Those jobs are separate on purpose. Myxo can run by itself. Foreign languages extend it; they do
 not define it.
 
 ## 1. The Standalone Language Core
 
-A `.nx` program is real Nx source. It is not translated into Python or C++ first.
+A `.myx` program is real Myxo source. It is not translated into Python or C++ first.
 
 ```text
-.nx source
+.myx source
   -> lexer.js
   -> parser.js
   -> AST
@@ -26,17 +26,17 @@ A `.nx` program is real Nx source. It is not translated into Python or C++ first
 
 Current implementation:
 
-- `lexer.js` tokenizes Nx source.
+- `lexer.js` tokenizes Myxo source.
 - `parser.js` builds the AST.
-- `interpreter.js` walks the AST and enforces Nx semantics.
+- `interpreter.js` walks the AST and enforces Myxo semantics.
 - `builtins.js` installs the core standard functions.
-- `std.nx` is a self-hosted standard library written in Nx.
-- `nx.js` is the CLI, REPL, formatter entrypoint, and Node embed API.
+- `std.myx` is a self-hosted standard library written in Myxo.
+- `myxo.js` is the CLI, REPL, formatter entrypoint, and Node embed API.
 
-That means these are Nx language behavior, not aliases over another runtime:
+That means these are Myxo language behavior, not aliases over another runtime:
 
 - `seed` creates a pathway.
-- `agent` defines a callable Nx function.
+- `agent` defines a callable Myxo function.
 - `report` returns from an agent.
 - `reinforce` loops.
 - `decay` removes a pathway.
@@ -51,7 +51,7 @@ while tightening a spec and eventually adding bytecode/native or other host runt
 
 ## 2. Values And Execution
 
-Nx values are intentionally small and portable:
+Myxo values are intentionally small and portable:
 
 - numbers
 - strings
@@ -63,7 +63,7 @@ Nx values are intentionally small and portable:
 
 The interpreter stores named values in environments. A named value is a pathway. Reading a
 pathway reinforces it by increasing its strength. `mesh()`, `strength(name)`, `prune()`, and
-`metabolize()` expose that behavior to Nx code.
+`metabolize()` expose that behavior to Myxo code.
 
 Agents are closures over their environment. The runtime can hot-promote pure agents by memoizing
 calls it can prove safe: plain parameters, primitive arguments/results, no capabilities, no
@@ -71,7 +71,7 @@ observable side effects, no mutable outer-data dependency, and no stale global e
 
 ## 3. Builtins vs Capabilities
 
-Nx has a hard distinction:
+Myxo has a hard distinction:
 
 - **Builtins** are ordinary language power: math, strings, lists, meshes, output, routing.
 - **Capabilities** are host power: database calls, Telegram, Python, C++ binaries, shell,
@@ -81,7 +81,7 @@ A capability does not exist inside a script unless the host registers it.
 
 Even if the host registers it, production runners can require the script to declare it:
 
-```nx
+```myx
 needs lookup, spend(max 5, total 15)
 
 emit lookup("lead")
@@ -98,7 +98,7 @@ host allowlist
   -> audit ledger
 ```
 
-If a script calls a capability it did not declare, Nx refuses before the host is touched. Every
+If a script calls a capability it did not declare, Myxo refuses before the host is touched. Every
 allowed call and every refusal is recorded in the audit ledger.
 
 Production runners also add operational limits:
@@ -112,20 +112,20 @@ Production runners also add operational limits:
 
 Polyglot support is foreign-function interface, not identity.
 
-Nx sees every foreign language call as a capability:
+Myxo sees every foreign language call as a capability:
 
-```nx
+```myx
 needs pycall(total 3)
 
 seed result = pycall("tools.py", "score", "lead-17")
 emit result
 ```
 
-The outer Nx law is the same whether the capability is implemented in Nx, Python, C++, Node, or
+The outer Myxo law is the same whether the capability is implemented in Myxo, Python, C++, Node, or
 a remote tool:
 
 ```text
-Nx script -> capability name -> host bridge -> foreign runtime -> Nx value
+Myxo script -> capability name -> host bridge -> foreign runtime -> Myxo value
 ```
 
 ### Rich Runtime Bridge
@@ -146,37 +146,37 @@ but skips when `perl` is not on PATH.
 C++, Rust, Go, and many existing tools usually plug in first as compiled executables:
 
 ```text
-Nx -> bridgeExec("my_tool.exe") -> argv/stdout -> Nx string
+Myxo -> bridgeExec("my_tool.exe") -> argv/stdout -> Myxo string
 ```
 
 That is intentionally weaker than the rich bridge:
 
 - stdout is the result
 - structured values need JSON discipline from the executable
-- Nx can still fence, budget, and audit the call boundary
+- Myxo can still fence, budget, and audit the call boundary
 
-The stronger future version is a stable Nx FFI/wire protocol so compiled languages can expose
+The stronger future version is a stable Myxo FFI/wire protocol so compiled languages can expose
 structured functions instead of only command-line stdout.
 
 ## 5. MCP And JAMES Are Hosts, Not The Language
 
-MCP tools are another capability catalog. `mcp-bridge.js` turns each MCP tool into a fenced Nx
-capability. `nx-run.js` and `nx-live.js` are production runners for agent-written scripts.
+MCP tools are another capability catalog. `mcp-bridge.js` turns each MCP tool into a fenced Myxo
+capability. `myxo-run.js` and `myxo-live.js` are production runners for agent-written scripts.
 
-JAMES uses this by exposing a narrow `james_nx_run` surface. That is one host integration. Nx
+JAMES uses this by exposing a narrow `james_nx_run` surface. That is one host integration. Myxo
 must still work without JAMES:
 
 ```text
-node nx.js examples/fib.nx
-node nx.js
-node nx.js fmt examples/fib.nx --check
+node myxo.js examples/fib.myx
+node myxo.js
+node myxo.js fmt examples/fib.myx --check
 npm test
 ```
 
 ## 6. Security Boundary
 
 The fence controls which verb a script may call, how often or how much it may spend, and what
-gets logged at the Nx boundary.
+gets logged at the Myxo boundary.
 
 The fence does **not** sandbox the code inside a granted arbitrary runtime.
 
@@ -199,16 +199,16 @@ good:  resize_image(input, output)
 bad:   sh(any_command)
 ```
 
-That is where Nx is strongest: it gives agents narrow verbs, budgets, time/fuel limits, and an
+That is where Myxo is strongest: it gives agents narrow verbs, budgets, time/fuel limits, and an
 audit trail.
 
 ## 7. The Short Version
 
-Nx should become "another Python/C++" in independence, not in purpose.
+Myxo should become "another Python/C++" in independence, not in purpose.
 
 It should own:
 
-- `.nx` files
+- `.myx` files
 - syntax and semantics
 - runtime behavior
 - standard library

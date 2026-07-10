@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why Myxo — the same job, two ways</title>
+<style>
+  :root{
+    --bg:#0d1017; --panel:#151a23; --ink:#e6edf3; --dim:#9aa7b8; --line:#222b38;
+    --py:#3b82f6; --nx:#34d399; --red:#ff6b6b; --redbg:#2a1a1d; --grnbg:#16241d; --amber:#f5b948;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:40px 20px}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--dim);margin:0 0 6px;font-size:18px}
+  .lede{color:var(--dim);max-width:760px;margin:0 0 34px}
+  .lede b{color:var(--ink)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:0 0 22px}
+  .ptitle{font-size:20px;margin:0 0 2px;font-weight:650}
+  .ptask{color:var(--dim);margin:0 0 18px;font-size:15px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.cols{grid-template-columns:1fr}}
+  .col h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+  .col.py h3{color:var(--py)} .col.myx h3{color:var(--nx)}
+  pre{margin:0;background:#0b0e14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    overflow:auto;font:13.5px/1.5 "SF Mono",Consolas,"Roboto Mono",monospace;color:#cdd6e3}
+  .col.py pre{border-left:3px solid var(--py)} .col.myx pre{border-left:3px solid var(--nx)}
+  .hl{background:var(--redbg);color:#ffd0d0;border-radius:4px;padding:0 3px}
+  .note{margin:10px 0 0;font-size:13.5px;padding:9px 12px;border-radius:8px}
+  .note.bad{background:var(--redbg);color:#ffc4c4} .note.good{background:var(--grnbg);color:#bff3d8}
+  .note b{font-weight:700}
+  .kicker{display:inline-block;font-size:12px;color:var(--amber);border:1px solid #3a3320;
+    background:#1d1a10;border-radius:20px;padding:2px 10px;margin-bottom:14px}
+  .truth{background:#11151d;border:1px solid var(--line);border-left:4px solid var(--amber);
+    border-radius:12px;padding:20px 24px;margin-top:30px;color:var(--dim)}
+  .truth h2{color:var(--ink);font-size:18px;margin:0 0 10px}
+  .truth b{color:var(--ink)}
+  .foot{color:#5d6b7d;font-size:13px;margin-top:26px;text-align:center}
+  .big{color:var(--red);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="kicker">Myxo 1.5 · the same job, two ways</span>
+  <h1>What <i>you</i> write &nbsp;vs.&nbsp; what the language carries</h1>
+  <p class="sub">Python and Myxo, side by side. Watch the <span style="color:var(--red)">red</span> — that's the work you do by hand in Python that Myxo's one rule does for you.</p>
+  <p class="lede">Myxo's whole idea is one rule: <b>used paths get stronger, unused ones fade.</b> That single rule shows up as three things you'd normally build yourself. Same results both sides — the difference is how much you have to write.</p>
+
+  <!-- PANEL 1 -->
+  <div class="panel">
+    <p class="ptitle">1 · Remembering answers <span style="color:var(--dim);font-weight:400">(caching)</span></p>
+    <p class="ptask">A function whose answer depends only on its input, called over and over — the classic example, Fibonacci.</p>
+    <div class="cols">
+      <div class="col py">
+        <h3>Python</h3>
+<pre>from functools import lru_cache
+
+<span class="hl">@lru_cache(maxsize=None)   # &larr; YOU add this line</span>
+def fib(n):
+    return n if n &lt; 2 else fib(n-1) + fib(n-2)</pre>
+        <p class="note bad">Without that line, <b>fib(32)</b> makes <b>7,049,155 calls</b> (0.88s). You have to know to add it.</p>
+      </div>
+      <div class="col nx">
+        <h3>Myxo</h3>
+<pre>agent fib(n) {
+  when n &lt; 2 { report n }
+  report fib(n-1) + fib(n-2)
+}</pre>
+        <p class="note good">No annotation. The language caches a hot, pure agent itself &mdash; <b>fib(32) returns instantly</b>. Same answer: 2178309.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2 -->
+  <div class="panel">
+    <p class="ptitle">2 · Sending work to the faster worker <span style="color:var(--dim);font-weight:400">(load-balancing)</span></p>
+    <p class="ptask">You have two workers that do the same job; one is faster. Push more of the work to the fast one.</p>
+    <div class="cols">
+      <div class="col py">
+        <h3>Python</h3>
+<pre>import time
+<span class="hl"># you write the balancer yourself:</span>
+def run(workers, items):
+    weight = [1.0]*len(workers)
+    out = [None]*len(items)
+    for i, item in enumerate(items):
+        <span class="hl">w = pick_by_weight(weight)        # you write this</span>
+        t = time.time()
+        out[i] = workers[w](item)
+        <span class="hl">weight[w] = faster(weight[w], time.time()-t)</span>
+    return out
+<span class="hl"># + pick_by_weight(), faster(), ...</span></pre>
+        <p class="note bad">You own the timing, the weighting, the loop &mdash; and the helpers it calls.</p>
+      </div>
+      <div class="col nx">
+        <h3>Myxo</h3>
+<pre>schedule("pool", [fast, slow], items)
+
+flows("pool")
+# -&gt; { fast: 5.98, slow: 1.03 }</pre>
+        <p class="note good">One line. The pool <b>measures speed and sends more work to the fast tube</b> &mdash; and remembers it for next time. (Real output above.)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3 -->
+  <div class="panel">
+    <p class="ptitle">3 · When a worker dies <span style="color:var(--dim);font-weight:400">(failover)</span></p>
+    <p class="ptask">One worker breaks mid-job. The work still has to get done.</p>
+    <div class="cols">
+      <div class="col py">
+        <h3>Python</h3>
+<pre>for i, item in enumerate(items):
+    <span class="hl">for w in by_health(workers):   # you write retry</span>
+        try:
+            out[i] = w(item); break
+        except Exception:
+            <span class="hl">mark_unhealthy(w)          # you write this</span></pre>
+        <p class="note bad">You write the retry, the health tracking, the reroute.</p>
+      </div>
+      <div class="col nx">
+        <h3>Myxo</h3>
+<pre>schedule("pool", [maybe_broken, ok], items)
+
+# a dead worker decays;
+# its items reroute to the survivors</pre>
+        <p class="note good">The <b>same one line</b>. Failover is already in the scheduler &mdash; nothing extra to write.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HONEST TRUTH STRIP -->
+  <div class="truth">
+    <h2>The honest version (so I'm not overselling)</h2>
+    <p>Myxo is <b>not faster than Python</b> for everyday work &mdash; it's an interpreter, and for tight number-crunching Python wins. The point isn't speed. The point is <span class="big">the red</span>: in Python <b>you</b> write the cache, the balancer, and the failover. In Myxo, one rule &mdash; <b>used paths strengthen, unused fade</b> &mdash; carries all three, so that code simply <i>isn't there</i>.</p>
+    <p style="margin-bottom:0">And the part that earns its keep <b>today</b> isn't even the self-tuning &mdash; it's <b>safety</b>: an Myxo program can only touch what you explicitly hand it. Nothing else exists in its world to misuse. That's the one you can hand to an AI.</p>
+  </div>
+
+  <p class="foot">Numbers measured on this machine, June 2026 &middot; Myxo 1.5 &middot; built from scratch, zero dependencies.</p>
+</div>
+</body>
+</html>

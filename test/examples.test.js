@@ -9,7 +9,7 @@ const { parse } = require('../parser');
 const { formatSource } = require('../format');
 
 const dir = path.join(__dirname, '..', 'examples');
-const files = fs.readdirSync(dir).filter(f => f.endsWith('.nx'));
+const files = fs.readdirSync(dir).filter(f => f.endsWith('.myx'));
 
 test('there are examples to check', () => { assert.ok(files.length > 0); });
 
@@ -19,6 +19,6 @@ for (const f of files) {
     assert.doesNotThrow(() => parse(src), `examples/${f} failed to parse`);
     let out;
     assert.doesNotThrow(() => { out = formatSource(src); }, `examples/${f} failed to format (a node type the formatter doesn't know?)`);
-    assert.doesNotThrow(() => parse(out), `examples/${f} formatted output is not re-parseable`);   // fmt must produce valid Nx
+    assert.doesNotThrow(() => parse(out), `examples/${f} formatted output is not re-parseable`);   // fmt must produce valid Myxo
   });
 }

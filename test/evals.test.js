@@ -6,8 +6,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 
-const { score, stripTests, missingConstruct, codeMinusNoise, parseError, loadTasks } = require('../nx-evals/run-evals');
-const { extractNx } = require('../nx-evals/generators/extract');
+const { score, stripTests, missingConstruct, codeMinusNoise, parseError, loadTasks } = require('../myxo-evals/run-evals');
+const { extractNx } = require('../myxo-evals/generators/extract');
 
 const tasks = loadTasks();
 const task = name => { const t = tasks.find(t => t.name === name); assert.ok(t, 'seed task missing: ' + name); return t; };
@@ -89,13 +89,13 @@ test('parseError: null on valid source, message on broken source', () => {
 
 // --- MEDIUM: extractNx is multi-block-safe and language-tag-safe (was first-block-only) -------------------
 test('extractNx concatenates MULTIPLE nx blocks', () => {
-  const reply = 'Here:\n```nx\nagent a(x) { report x }\n```\nand:\n```nx\nagent b(y) { report y }\n```';
+  const reply = 'Here:\n```myx\nagent a(x) { report x }\n```\nand:\n```myx\nagent b(y) { report y }\n```';
   const code = extractNx(reply);
   assert.ok(/agent a/.test(code) && /agent b/.test(code), 'both agents kept');
 });
 
 test('extractNx prefers the nx-tagged block over a leading prose block', () => {
-  const reply = 'Reasoning:\n```text\nI will define the agent.\n```\nSolution:\n```nx\nagent f(x) { report x }\n```';
+  const reply = 'Reasoning:\n```text\nI will define the agent.\n```\nSolution:\n```myx\nagent f(x) { report x }\n```';
   const code = extractNx(reply);
   assert.ok(/agent f/.test(code), 'the nx block is chosen');
   assert.ok(!/I will define/.test(code), 'the prose block is discarded');

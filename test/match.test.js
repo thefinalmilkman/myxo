@@ -2,7 +2,7 @@
 // match.test.js — pattern matching (`match SUBJECT { PATTERN { ... } }`).
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { run } = require('../nx');
+const { run } = require('../myxo');
 const { formatSource } = require('../format');
 const out = (src) => run(src, { capture: true });
 

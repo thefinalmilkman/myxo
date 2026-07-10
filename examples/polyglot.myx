@@ -1,0 +1,11 @@
+# Myxo as the connective layer for ALL languages: each language is a FENCED pathway, governed by the one law.
+# Python, Node, and Perl plug in through the SAME contract (defineLang); one audit ledger records every call.
+needs pycall, jscall, plcall, sh
+
+emit "python add =", pycall("examples/mathlib.py", "add", 2, 3)
+emit "node   add =", jscall("examples/mathlib.js", "add", 10, 20)
+emit "perl   add =", plcall("examples/mathlib.pl", "add", 4, 5)
+
+seed s = jscall("examples/mathlib.js", "stats", [10, 4, 7, 2])
+emit "node   stats: sum =", s["sum"], " max =", s["max"], " n =", s["n"]
+emit "shell      =", sh("echo one-contract-many-languages")

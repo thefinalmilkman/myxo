@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const NX = path.join(__dirname, '..', 'nx.js');
+const NX = path.join(__dirname, '..', 'myxo.js');
 const VERSION = require('../package.json').version;
 const run = (args) => spawnSync('node', [NX, ...args], { encoding: 'utf8', input: '' });   // input:'' so any stdin read EOFs
 const tmp = (name, text) => { const p = path.join(os.tmpdir(), `nxcli_${process.pid}_${name}`); fs.writeFileSync(p, text); return p; };
@@ -29,7 +29,7 @@ test('--version / -v / version print the package version and exit 0', () => {
 });
 
 test('running a file — bare and explicit `run` — executes it', () => {
-  const f = tmp('demo.nx', 'emit "hi from cli"\n');
+  const f = tmp('demo.myx', 'emit "hi from cli"\n');
   for (const args of [[f], ['run', f]]) {
     const r = run(args);
     assert.equal(r.status, 0);
@@ -39,7 +39,7 @@ test('running a file — bare and explicit `run` — executes it', () => {
 });
 
 test('a missing file is a clean error (exit 1), not a stack trace', () => {
-  const r = run(['definitely_not_here.nx']);
+  const r = run(['definitely_not_here.myx']);
   assert.equal(r.status, 1);
   assert.match(r.stderr, /no such file/);
   assert.doesNotMatch(r.stderr, /at Object|node:internal/);   // no raw Node stack
@@ -52,7 +52,7 @@ test('`run` with no file exits 2 with a hint', () => {
 });
 
 test('--strict enforces type contracts from the CLI (exit 1); loose ignores them', () => {
-  const f = tmp('strict.nx', 'seed n: number = "bad"\nemit n\n');
+  const f = tmp('strict.myx', 'seed n: number = "bad"\nemit n\n');
   assert.equal(run([f]).status, 0);                            // ignored without --strict
   const s = run([f, '--strict']);
   assert.equal(s.status, 1);
@@ -61,7 +61,7 @@ test('--strict enforces type contracts from the CLI (exit 1); loose ignores them
 });
 
 test('`fmt` prints canonical source (exit 0)', () => {
-  const f = tmp('fmt.nx', 'seed   x=5\n');
+  const f = tmp('fmt.myx', 'seed   x=5\n');
   const r = run(['fmt', f]);
   assert.equal(r.status, 0);
   assert.match(r.stdout, /seed x = 5/);
@@ -69,18 +69,18 @@ test('`fmt` prints canonical source (exit 0)', () => {
 });
 
 test('`test` exits 0 on pass, 1 on failure', () => {
-  const f = tmp('t.nx', 'test "ok" { expect 1 is 1 }\n');
+  const f = tmp('t.myx', 'test "ok" { expect 1 is 1 }\n');
   assert.equal(run(['test', f]).status, 0);
   fs.writeFileSync(f, 'test "bad" { expect 1 is 2 }\n');
   assert.equal(run(['test', f]).status, 1);
   fs.unlinkSync(f);
 });
 
-test('a syntax error in a run file is a clean Nx error (exit 1)', () => {
-  const f = tmp('bad.nx', 'seed = 5\n');
+test('a syntax error in a run file is a clean Myxo error (exit 1)', () => {
+  const f = tmp('bad.myx', 'seed = 5\n');
   const r = run([f]);
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /Nx error/);
+  assert.match(r.stderr, /Myxo error/);
   fs.unlinkSync(f);
 });
 
@@ -94,7 +94,7 @@ test('a directory passed as a run file is a clean error, never a raw stack', () 
 });
 
 test('fmt on a missing/dir path is a clean error, never a raw stack', () => {
-  const miss = run(['fmt', 'no_such_file_xyz.nx']);
+  const miss = run(['fmt', 'no_such_file_xyz.myx']);
   assert.equal(miss.status, 1);
   assert.match(miss.stderr, /no such file/);
   assert.doesNotMatch(miss.stderr, /at \w|node:internal|ENOENT/);
@@ -104,7 +104,7 @@ test('fmt on a missing/dir path is a clean error, never a raw stack', () => {
 });
 
 test('a typo\'d flag is REJECTED, not silently dropped (no false strict pass)', () => {
-  const f = tmp('typo.nx', 'seed n: number = "bad"\nemit n\n');
+  const f = tmp('typo.myx', 'seed n: number = "bad"\nemit n\n');
   const r = run([f, '--stict']);          // typo of --strict
   assert.equal(r.status, 2);              // usage error, NOT a green run
   assert.match(r.stderr, /unknown flag/);
@@ -116,7 +116,7 @@ test('a typo\'d flag is REJECTED, not silently dropped (no false strict pass)', 
 });
 
 test('fmt --write actually rewrites the file in place', () => {
-  const f = tmp('w.nx', 'seed   x=5\n');
+  const f = tmp('w.myx', 'seed   x=5\n');
   const r = run(['fmt', f, '--write']);
   assert.equal(r.status, 0);
   assert.equal(fs.readFileSync(f, 'utf8'), 'seed x = 5\n');

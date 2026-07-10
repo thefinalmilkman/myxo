@@ -1,7 +1,7 @@
 'use strict';
-// fenced-agent.js — Nx as a SAFE ACTION-LANGUAGE.
+// fenced-agent.js — Myxo as a SAFE ACTION-LANGUAGE.
 //
-// The point: an agent written in Nx can do EXACTLY what the host hands it — and
+// The point: an agent written in Myxo can do EXACTLY what the host hands it — and
 // nothing else. Dangerous powers aren't "blocked" by a check it might bypass;
 // they simply do not exist in its world. And the powers you DO grant, you shape.
 // Same law as Zero's honesty guard and the outward gate: capability by explicit
@@ -10,7 +10,7 @@
 //
 // Run: node examples/fenced-agent.js
 
-const { run } = require('../nx');
+const { run } = require('../myxo');
 
 const bar = (t) => console.log('\n\x1b[36m=== ' + t + ' ===\x1b[0m');
 
@@ -61,7 +61,7 @@ emit spend(5000)
 `, { natives: gatedWorld, capture: true }));
 console.log('   \x1b[90mthe agent can act — but only as far as the host lets the rope run.\x1b[0m');
 
-// ── Act 4: the other Nx superpower — useful pathways reinforce, dead ones decay. ──
+// ── Act 4: the other Myxo superpower — useful pathways reinforce, dead ones decay. ──
 bar('The living mesh — reinforce through use, prune the silent');
 process.stdout.write(run(`
 seed telegram = "route:telegram"

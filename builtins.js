@@ -1,17 +1,17 @@
 'use strict';
-// builtins.js — native functions written in JavaScript and exposed to Nx.
+// builtins.js — native functions written in JavaScript and exposed to Myxo.
 // This is the host bridge: registerNative() is how the Nexus later hands real
-// capabilities (db, telegram, wallet) to Nx scripts. The safe core lives here.
+// capabilities (db, telegram, wallet) to Myxo scripts. The safe core lives here.
 
 const { VOID, stringify, typeName } = require('./interpreter');
-const { NxError } = require('./errors');
+const { MyxoError } = require('./errors');
 const { performance } = require('perf_hooks');   // monotonic, sub-ms clock for the routing speed signal
 
 function need(args, n, name) {
-  if (args.length < n) throw new NxError(`${name} needs ${n} argument(s), got ${args.length}`);
+  if (args.length < n) throw new MyxoError(`${name} needs ${n} argument(s), got ${args.length}`);
 }
 function num(v, name) {
-  if (typeof v !== 'number') throw new NxError(`${name} expected a number, got ${typeName(v)}`);
+  if (typeof v !== 'number') throw new MyxoError(`${name} expected a number, got ${typeName(v)}`);
   return v;
 }
 
@@ -51,7 +51,7 @@ function routeCall(interp, name, callArgs) {
       lastErr = e;
     }
   }
-  throw lastErr || new NxError(`route '${name}' has no working provider`);
+  throw lastErr || new MyxoError(`route '${name}' has no working provider`);
 }
 
 // ---- THE PHYSARUM SCHEDULER. `route` picks ONE provider per call; `schedule` distributes a whole BATCH of work
@@ -82,15 +82,15 @@ function distribute(cond, m, credit) {
 }
 
 function scheduleRun(interp, name, workers, items) {
-  if (typeof name !== 'string') throw new NxError('schedule(name, workers, items) needs a name string');
-  if (!Array.isArray(workers) || workers.length === 0) throw new NxError('schedule needs a non-empty list of worker agents');
-  if (!workers.every(w => w && w.__agent)) throw new NxError('schedule workers must all be agents (each takes a chunk list, returns a results list)');
-  if (!Array.isArray(items)) throw new NxError('schedule needs a list of work items');
+  if (typeof name !== 'string') throw new MyxoError('schedule(name, workers, items) needs a name string');
+  if (!Array.isArray(workers) || workers.length === 0) throw new MyxoError('schedule needs a non-empty list of worker agents');
+  if (!workers.every(w => w && w.__agent)) throw new MyxoError('schedule workers must all be agents (each takes a chunk list, returns a results list)');
+  if (!Array.isArray(items)) throw new MyxoError('schedule needs a list of work items');
 
   let P = interp.pools.get(name);
   if (P) {
     if (P.workers.length !== workers.length || P.workers.some((w, i) => w !== workers[i]))
-      throw new NxError(`scheduler '${name}' is already defined with different workers`);   // no silent stale pool
+      throw new MyxoError(`scheduler '${name}' is already defined with different workers`);   // no silent stale pool
   } else {
     P = { workers: workers.slice(), cond: workers.map(() => 1), credit: workers.map(() => 0) };
     interp.pools.set(name, P);
@@ -98,9 +98,9 @@ function scheduleRun(interp, name, workers, items) {
 
   const m = items.length;
   if (m === 0) return [];
-  const { runSettled, assertSerializable } = require('./nx-concurrent');
+  const { runSettled, assertSerializable } = require('./myxo-concurrent');
   const { nxToJs, jsToNx } = require('./polyglot');
-  items.forEach((it) => { try { assertSerializable(it, 'a scheduled work item'); } catch (e) { throw new NxError(e.message); } });
+  items.forEach((it) => { try { assertSerializable(it, 'a scheduled work item'); } catch (e) { throw new MyxoError(e.message); } });
 
   const results = new Array(m);
 
@@ -127,7 +127,7 @@ function scheduleRun(interp, name, workers, items) {
       if (o.ok) {
         const out = o.value;
         if (!Array.isArray(out) || out.length !== chunkIdx.length)
-          throw new NxError(`scheduler '${name}': worker '${P.workers[wi].name || '?'}' returned ${Array.isArray(out) ? out.length + ' results' : 'a non-list'} for a ${chunkIdx.length}-item chunk — a worker must return one result per item, in order`);
+          throw new MyxoError(`scheduler '${name}': worker '${P.workers[wi].name || '?'}' returned ${Array.isArray(out) ? out.length + ' results' : 'a non-list'} for a ${chunkIdx.length}-item chunk — a worker must return one result per item, in order`);
         chunkIdx.forEach((gi, p) => { results[gi] = jsToNx(out[p]); });
         const quality = 1 + 8 / ((o.ms || 0) / chunkIdx.length + 1);   // per-item speed -> recent quality (fast ~9, slow ~1)
         P.cond[wi] = Math.max(0.05, (1 - ALPHA) * P.cond[wi] + ALPHA * quality);   // EWMA toward it: fast workers climb
@@ -146,10 +146,10 @@ function scheduleRun(interp, name, workers, items) {
   if (failed.length) {
     const dead = new Set(failed.map(f => f.wi));
     const survivors = allW.filter(i => !dead.has(i));
-    if (survivors.length === 0) throw new NxError(`scheduler '${name}': every worker failed (${failed[0].error})`);
+    if (survivors.length === 0) throw new MyxoError(`scheduler '${name}': every worker failed (${failed[0].error})`);
     const reroute = failed.flatMap(f => f.chunkIdx);
     const stillFailed = runRound(reroute, survivors);
-    if (stillFailed.length) throw new NxError(`scheduler '${name}': ${stillFailed[0].error}`);
+    if (stillFailed.length) throw new MyxoError(`scheduler '${name}': ${stillFailed[0].error}`);
   }
   return results;
 }
@@ -162,13 +162,13 @@ function builtins() {
       const v = a[0];
       if (typeof v === 'string' || Array.isArray(v)) return v.length;
       if (v instanceof Map) return v.size;
-      throw new NxError(`len expected a string, list, or mesh, got ${typeName(v)}`);
+      throw new MyxoError(`len expected a string, list, or mesh, got ${typeName(v)}`);
     },
     type: (a) => typeName(a[0]),
 
     // — mesh helpers —
-    keys: (a) => { if (!(a[0] instanceof Map)) throw new NxError('keys expected a mesh'); return [...a[0].keys()]; },
-    values: (a) => { if (!(a[0] instanceof Map)) throw new NxError('values expected a mesh'); return [...a[0].values()]; },
+    keys: (a) => { if (!(a[0] instanceof Map)) throw new MyxoError('keys expected a mesh'); return [...a[0].keys()]; },
+    values: (a) => { if (!(a[0] instanceof Map)) throw new MyxoError('values expected a mesh'); return [...a[0].values()]; },
     has: (a) => { need(a, 2, 'has'); return a[0] instanceof Map ? a[0].has(String(a[1])) : false; },
 
     // — lists —
@@ -180,8 +180,8 @@ function builtins() {
       for (let i = start; i < end; i++) out.push(i);
       return out;
     },
-    push: (a) => { need(a, 2, 'push'); if (!Array.isArray(a[0])) throw new NxError('push expected a list'); a[0].push(a[1]); return a[0]; },
-    pop: (a) => { if (!Array.isArray(a[0])) throw new NxError('pop expected a list'); return a[0].length ? a[0].pop() : VOID; },
+    push: (a) => { need(a, 2, 'push'); if (!Array.isArray(a[0])) throw new MyxoError('push expected a list'); a[0].push(a[1]); return a[0]; },
+    pop: (a) => { if (!Array.isArray(a[0])) throw new MyxoError('pop expected a list'); return a[0].length ? a[0].pop() : VOID; },
 
     // — conversion & strings —
     str: (a) => stringify(a[0]),
@@ -189,7 +189,7 @@ function builtins() {
       const v = a[0];
       if (typeof v === 'number') return v;
       const n = parseFloat(v);
-      if (Number.isNaN(n)) throw new NxError(`cannot read '${stringify(v)}' as a number`);
+      if (Number.isNaN(n)) throw new MyxoError(`cannot read '${stringify(v)}' as a number`);
       return n;
     },
     upper: (a) => String(a[0]).toUpperCase(),
@@ -217,7 +217,7 @@ function builtins() {
 
     // — strings —
     split: (a) => { need(a, 2, 'split'); return String(a[0]).split(stringify(a[1])); },
-    join: (a) => { need(a, 2, 'join'); if (!Array.isArray(a[0])) throw new NxError('join expected a list'); return a[0].map(x => stringify(x)).join(stringify(a[1])); },
+    join: (a) => { need(a, 2, 'join'); if (!Array.isArray(a[0])) throw new MyxoError('join expected a list'); return a[0].map(x => stringify(x)).join(stringify(a[1])); },
     trim: (a) => String(a[0]).trim(),
     replace: (a) => { need(a, 3, 'replace'); return String(a[0]).split(stringify(a[1])).join(stringify(a[2])); },
     repeat: (a) => { need(a, 2, 'repeat'); return String(a[0]).repeat(Math.max(0, num(a[1], 'repeat'))); },
@@ -228,7 +228,7 @@ function builtins() {
     // — generic sequence ops (string OR list) —
     slice: (a) => {
       need(a, 2, 'slice'); const s = a[0];
-      if (typeof s !== 'string' && !Array.isArray(s)) throw new NxError(`slice expected a string or list, got ${typeName(s)}`);
+      if (typeof s !== 'string' && !Array.isArray(s)) throw new MyxoError(`slice expected a string or list, got ${typeName(s)}`);
       const end = a.length > 2 ? num(a[2], 'slice') : s.length;
       return s.slice(num(a[1], 'slice'), end);
     },
@@ -236,28 +236,28 @@ function builtins() {
       need(a, 2, 'find'); const s = a[0];
       if (typeof s === 'string') return s.indexOf(stringify(a[1]));
       if (Array.isArray(s)) { for (let i = 0; i < s.length; i++) if (interp.equals(s[i], a[1])) return i; return -1; }
-      throw new NxError(`find expected a string or list, got ${typeName(s)}`);
+      throw new MyxoError(`find expected a string or list, got ${typeName(s)}`);
     },
     reverse: (a) => {
       const s = a[0];
       if (typeof s === 'string') return [...s].reverse().join('');
       if (Array.isArray(s)) return s.slice().reverse();
-      throw new NxError(`reverse expected a string or list, got ${typeName(s)}`);
+      throw new MyxoError(`reverse expected a string or list, got ${typeName(s)}`);
     },
 
     // — list mutation & mesh ops —
-    shift: (a) => { if (!Array.isArray(a[0])) throw new NxError('shift expected a list'); return a[0].length ? a[0].shift() : VOID; },
-    unshift: (a) => { need(a, 2, 'unshift'); if (!Array.isArray(a[0])) throw new NxError('unshift expected a list'); a[0].unshift(a[1]); return a[0]; },
+    shift: (a) => { if (!Array.isArray(a[0])) throw new MyxoError('shift expected a list'); return a[0].length ? a[0].shift() : VOID; },
+    unshift: (a) => { need(a, 2, 'unshift'); if (!Array.isArray(a[0])) throw new MyxoError('unshift expected a list'); a[0].unshift(a[1]); return a[0]; },
     sort: (a, interp) => {
-      if (!Array.isArray(a[0])) throw new NxError('sort expected a list');
+      if (!Array.isArray(a[0])) throw new MyxoError('sort expected a list');
       const xs = a[0].slice();
       const cmp = a[1];
       if (cmp && (cmp.__agent || cmp.__native)) xs.sort((p, q) => num(interp.callValue(cmp, [p, q]), 'sort comparator'));
       else xs.sort((p, q) => (typeof p === 'number' && typeof q === 'number') ? p - q : stringify(p) < stringify(q) ? -1 : stringify(p) > stringify(q) ? 1 : 0);
       return xs;
     },
-    entries: (a) => { if (!(a[0] instanceof Map)) throw new NxError('entries expected a mesh'); return [...a[0].entries()].map(([k, v]) => [k, v]); },
-    merge: (a) => { need(a, 2, 'merge'); if (!(a[0] instanceof Map) || !(a[1] instanceof Map)) throw new NxError('merge expected two meshes'); return new Map([...a[0], ...a[1]]); },
+    entries: (a) => { if (!(a[0] instanceof Map)) throw new MyxoError('entries expected a mesh'); return [...a[0].entries()].map(([k, v]) => [k, v]); },
+    merge: (a) => { need(a, 2, 'merge'); if (!(a[0] instanceof Map) || !(a[1] instanceof Map)) throw new MyxoError('merge expected two meshes'); return new Map([...a[0], ...a[1]]); },
 
     // — the Law engine: introspect and prune the living mesh —
     mesh: (_a, interp) => {
@@ -276,7 +276,7 @@ function builtins() {
     // — the living mesh: introspect heat, and metabolize (decay cold + report promoted) —
     strength: (a, interp) => {
       const name = a[0];
-      if (typeof name !== 'string') throw new NxError('strength(name) needs a string pathway name');
+      if (typeof name !== 'string') throw new MyxoError('strength(name) needs a string pathway name');
       const e = interp.globals.vars.get(name);
       return e ? e.strength : 0;     // 0 = pathway absent or never read
     },
@@ -297,13 +297,13 @@ function builtins() {
     // — automatic flow-routing (the slime mold): route(name, [providers]) -> a router; flows(name) -> conductivities —
     route: (a, interp) => {
       const name = a[0], providers = a[1];
-      if (typeof name !== 'string') throw new NxError('route(name, [providers]) needs a name string');
-      if (!Array.isArray(providers) || providers.length === 0) throw new NxError('route needs a non-empty list of providers');
-      if (!providers.every(p => p && (p.__agent || p.__native))) throw new NxError('route providers must all be agents');
+      if (typeof name !== 'string') throw new MyxoError('route(name, [providers]) needs a name string');
+      if (!Array.isArray(providers) || providers.length === 0) throw new MyxoError('route needs a non-empty list of providers');
+      if (!providers.every(p => p && (p.__agent || p.__native))) throw new MyxoError('route providers must all be agents');
       const existing = interp.routes.get(name);
       if (existing) {
         if (existing.providers.length !== providers.length || existing.providers.some((p, i) => p !== providers[i]))
-          throw new NxError(`route '${name}' is already defined with different providers`);   // no silent stale providers
+          throw new MyxoError(`route '${name}' is already defined with different providers`);   // no silent stale providers
       } else {
         interp.routes.set(name, { providers: providers.slice(), cond: providers.map(() => 1), credit: providers.map(() => 0) });
       }
@@ -331,18 +331,18 @@ function builtins() {
       let cap = Infinity;
       if (a.length) {
         cap = num(a[0], 'channel');
-        if (!Number.isInteger(cap) || cap < 1) throw new NxError('channel(capacity) needs a positive whole number');
+        if (!Number.isInteger(cap) || cap < 1) throw new MyxoError('channel(capacity) needs a positive whole number');
       }
       return { __channel: true, buf: [], cap, recvW: [], sendW: [] };
     },
     drain: (a, interp) => { interp.pump(); interp.checkAllFibersDone(); return VOID; },   // run ALL fibers to completion
     await: (a, interp) => {                                       // run the scheduler, then resolve THIS fiber (not the whole pool)
       const f = a[0];
-      if (!(f && f.__fiber)) throw new NxError(`await needs a fiber (from spawn), got ${typeName(f)}`);
+      if (!(f && f.__fiber)) throw new MyxoError(`await needs a fiber (from spawn), got ${typeName(f)}`);
       interp.pump();
       if (f.error) throw f.error;
       if (f.done) return f.result;
-      throw new NxError('the awaited fiber is deadlocked — blocked with no one to unblock it');   // only blame f, not unrelated parked fibers
+      throw new MyxoError('the awaited fiber is deadlocked — blocked with no one to unblock it');   // only blame f, not unrelated parked fibers
     },
   };
 }
