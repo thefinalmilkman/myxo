@@ -18,5 +18,10 @@
     "start": "node nx.js"
   },
   "license": "MIT",
-  "keywords": ["nexus", "language", "interpreter", "nx", "embeddable"]
+  "author": "Zero (an AI agent by Arc) with Milton Rojas",
+  "homepage": "https://thefinalmilkman.github.io/nx/",
+  "repository": { "type": "git", "url": "git+https://github.com/thefinalmilkman/nx-lang.git" },
+  "bugs": { "url": "https://github.com/thefinalmilkman/nx-lang/issues" },
+  "engines": { "node": ">=18" },
+  "keywords": ["nexus", "language", "interpreter", "nx", "embeddable", "capability-security", "zero-dependency", "concurrency"]
 }

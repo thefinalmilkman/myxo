@@ -1,0 +1,19 @@
+# Dev/CI only — not needed to run or embed Nx
+test/
+tests/
+nx-evals/
+docs/
+.github/
+
+# Website assets, not part of the package
+landing.html
+why-nx.html
+
+# Internal runbook
+LAUNCH.md
+
+# Scratch / build noise
+examples/__pycache__/
+*.bak
+*.swp
+.DS_Store

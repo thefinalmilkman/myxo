@@ -1,6 +1,6 @@
 # Nx — the language of the Nexus
 
-**Nx 1.2** · a complete, from-scratch, **zero-dependency** language — its own parser, interpreter, stdlib, pattern matching, gradual types, real multi-core concurrency, a capability fence, tests, formatter, REPL, language server, and CLI.
+**Nx 1.5** · a complete, from-scratch, **zero-dependency** language — its own parser, interpreter, stdlib, pattern matching, gradual types, real multi-core concurrency, a capability fence, tests, formatter, REPL, language server, and CLI.
 
 A small, standalone and embeddable programming language whose runtime **is** the Nexus law:
 
