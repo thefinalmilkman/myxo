@@ -732,6 +732,23 @@ test('soundness: reassigning a closed-over agent (non-global) invalidates the ca
   const src = 'agent make(){ seed val = agent(){ report 1 }\n seed caller = agent(x){ report val() + x }\n seed a=caller(0)\n seed b=caller(0)\n seed c=caller(0)\n val = agent(){ report 100 }\n seed d=caller(0)\n report str(a)+str(b)+str(c)+str(d) }\nemit make()';
   assert.equal(out(src), '111100\n'); sameOnOff(src);
 });
+test('soundness: a router wrapped in a pure agent keeps routing every call (memo must not freeze the slime mold)', () => {
+  // Bug A: calling a route() is nondeterministic mesh state — it MUST taint the caller. Otherwise the wrapping
+  // agent looks pure, promotes, and caches the router's first answer forever: the slime mold flatlines and one
+  // provider is frozen in. memo-ON must equal memo-OFF, and both must share traffic like the un-wrapped router.
+  const src = 'agent A(x){ report "A" }\nagent B(x){ report "B" }\nseed r = route("wrapmemo", [A, B])\nagent ask(q){ report r(q) }\nseed g = []\nreinforce 100 times { push(g, ask(0)) }\nseed na = count(g, agent(v){ report v == "A" })\nemit na > 20, na < 80';
+  assert.equal(out(src), 'live live\n'); sameOnOff(src);   // frozen router => na is 0 or 100 => "dead"
+});
+test('soundness: prune()/metabolize() reaping a dependency invalidates the memo cache (no ghost answers)', () => {
+  // Bug B: prune/metabolize delete global pathways but (pre-fix) did NOT bump the epoch, so a memoized caller
+  // that promoted on a now-reaped dependency kept ghost-serving the stale cached answer forever — while `decay`
+  // (which DOES bump the epoch) correctly re-executes and hits the missing pathway. A reap is a global write:
+  // it must invalidate the memo, exactly like decay. Post-fix both hot(7) and warm(5) re-execute and throw.
+  const pruneSrc = 'agent helper(x){ report x*2 }\nagent hot(x){ report helper(x) }\nhot(7)\nhot(7)\nhot(7)\nprune(4)\nemit hot(7)';
+  assert.throws(() => out(pruneSrc), /unknown pathway 'helper'/);   // pre-fix: ghost-served '14'
+  const metaSrc = 'agent h2(x){ report x*3 }\nagent warm(x){ report h2(x) }\nwarm(5)\nwarm(5)\nwarm(5)\nmetabolize(4)\nemit warm(5)';
+  assert.throws(() => out(metaSrc), /unknown pathway 'h2'/);        // pre-fix: ghost-served '15'
+});
 
 // ---- automatic flow-routing (the slime mold): EWMA conductance, proportional flux, instant failover ----
 test('routing fails over from a broken provider to a working one', () => {

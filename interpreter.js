@@ -107,7 +107,7 @@ function typeName(v) {
 function isPrimitive(v) { return v === VOID || typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean'; }
 
 // builtins that read live mutable state or are nondeterministic/side-effecting -> a caller of them is NOT pure
-const IMPURE_BUILTINS = new Set(['random', 'prune', 'metabolize', 'mesh', 'strength', 'schedule', 'flows', 'channel', 'drain', 'await']);
+const IMPURE_BUILTINS = new Set(['random', 'prune', 'metabolize', 'mesh', 'strength', 'schedule', 'flows', 'channel', 'drain', 'await', 'route']);
 
 // a type-tagged, collision-free memo key (VOID / NaN / Infinity stay distinct — JSON.stringify collapses them to null)
 function keyOf(args) {
@@ -826,7 +826,7 @@ class Interpreter {
   callValue(callee, args, line) {
     if (callee && callee.__native) {
       if (!callee.capability) {
-        if (IMPURE_BUILTINS.has(callee.name)) this.markImpure(); // nondeterministic / state-reading / global-mutating builtin -> taint the caller
+        if (IMPURE_BUILTINS.has(callee.name) || callee.impure) this.markImpure(); // nondeterministic / state-reading / global-mutating builtin (incl. routers) -> taint the caller
         return callee.fn(args, this);                        // a language builtin — free
       }
       this.markImpure();                                     // any host capability call taints purity (side effects)

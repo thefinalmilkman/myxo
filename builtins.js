@@ -271,6 +271,7 @@ function builtins() {
       for (const [name, e] of [...interp.globals.vars]) {
         if (!e.system && e.strength < threshold) { interp.globals.vars.delete(name); removed++; }
       }
+      if (removed) interp.epoch++;   // reaping a global pathway IS a global write -> invalidate memo caches (parity with `decay`); else a memoized caller keeps ghost-serving a reaped dependency
       return removed;
     },
     // — the living mesh: introspect heat, and metabolize (decay cold + report promoted) —
@@ -286,6 +287,7 @@ function builtins() {
       for (const [name, e] of [...interp.globals.vars]) {
         if (!e.system && e.strength < threshold) { interp.globals.vars.delete(name); reaped.push(name); }  // cold decays
       }
+      if (reaped.length) interp.epoch++;   // same as prune: a reaped pathway invalidates every memo cache that could depend on it
       let promoted = 0;
       for (const rec of interp.memo.values()) if (rec.cache.size > 0) promoted++;   // hot pure agents that promoted
       const m = new Map();
@@ -308,7 +310,10 @@ function builtins() {
         interp.routes.set(name, { providers: providers.slice(), cond: providers.map(() => 1), credit: providers.map(() => 0) });
       }
       const rname = name;
-      return { __native: true, name: 'route:' + name, capability: false, fn: (callArgs, ip) => routeCall(ip, rname, callArgs) };
+      // `impure: true` -> calling a router TAINTS the caller (like random/flows): a router is stateful (conductance
+      // EWMA) and nondeterministic (weighted pick), so a plain agent that only calls it must NEVER be memoized —
+      // otherwise the first answer freezes in the cache and the whole Physarum routing law dies inside a pure caller.
+      return { __native: true, name: 'route:' + name, capability: false, impure: true, fn: (callArgs, ip) => routeCall(ip, rname, callArgs) };
     },
     flows: (a, interp) => {
       const name = a[0];
