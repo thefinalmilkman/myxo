@@ -1,13 +1,13 @@
-# Dev/CI only — not needed to run or embed Nx
+# Dev/CI only — not needed to run or embed Myxo
 test/
 tests/
-nx-evals/
+myxo-evals/
 docs/
 .github/
 
 # Website assets, not part of the package
-landing.html
-why-nx.html
+index.html
+why-myxo.html
 
 # Internal runbook
 LAUNCH.md
