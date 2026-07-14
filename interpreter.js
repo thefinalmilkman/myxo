@@ -109,15 +109,25 @@ function isPrimitive(v) { return v === VOID || typeof v === 'number' || typeof v
 // builtins that read live mutable state or are nondeterministic/side-effecting -> a caller of them is NOT pure
 const IMPURE_BUILTINS = new Set(['random', 'prune', 'metabolize', 'mesh', 'strength', 'schedule', 'flows', 'channel', 'drain', 'await', 'route']);
 
-// a type-tagged, collision-free memo key (VOID / NaN / Infinity stay distinct — JSON.stringify collapses them to null)
+// a type-tagged, collision-free memo key (VOID / NaN / Infinity stay distinct — JSON.stringify collapses them to null).
+// Each arg is tagged to an injective string, then LENGTH-PREFIXED (<len>:<part>) rather than separator-joined.
+// A bare join is UNSOUND: a string arg that itself contains the separator byte can forge a boundary —
+// ["a\x1fs:b","c"] and ["a","b\x1fs:c"] both join to the same key. Length framing makes the sequence injective:
+// the decoder reads <digits> ':' then exactly that many code units, so no content can fake a boundary.
 function keyOf(args) {
-  return args.map(a => {
-    if (a === VOID) return 'v';
-    const t = typeof a;
-    if (t === 'number') return Number.isNaN(a) ? 'n:NaN' : a === Infinity ? 'n:Inf' : a === -Infinity ? 'n:-Inf' : 'n:' + a;
-    if (t === 'boolean') return 'b:' + a;
-    return 's:' + a;
-  }).join('\x1f');
+  let key = '';
+  for (const a of args) {
+    let part;
+    if (a === VOID) part = 'v';
+    else {
+      const t = typeof a;
+      if (t === 'number') part = Number.isNaN(a) ? 'n:NaN' : a === Infinity ? 'n:Inf' : a === -Infinity ? 'n:-Inf' : Object.is(a, -0) ? 'n:-0' : 'n:' + a;
+      else if (t === 'boolean') part = 'b:' + a;
+      else part = 's:' + a;
+    }
+    key += part.length + ':' + part;
+  }
+  return key;
 }
 
 function truthy(v) {

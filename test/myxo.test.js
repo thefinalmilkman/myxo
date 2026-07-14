@@ -723,6 +723,20 @@ test('soundness: VOID and NaN args do not collide in the cache key', () => {
   const src = 'agent id(x){ report x }\nemit type(id(void))\nemit type(id(sqrt(0-1)))\nemit type(id(void))';
   assert.equal(out(src), 'void\nnumber\nvoid\n'); sameOnOff(src);
 });
+test('soundness: string args containing the key-separator byte do not collide in the memo cache', () => {
+  // keyOf tags each arg and (pre-fix) JOINED them with \x1f — so a string arg that itself contains \x1f
+  // could forge a boundary: f("a\x1fs:b","c") and f("a","b\x1fs:c") produced the SAME key, and the second
+  // call ghost-returned the first's cached answer. Length-prefix framing makes the key injective.
+  const S = '\x1f';
+  const src = `agent f(a, b){ report a }\nemit len(f("a${S}s:b", "c"))\nemit len(f("a${S}s:b", "c"))\nemit len(f("a${S}s:b", "c"))\nemit len(f("a", "b${S}s:c"))`;
+  assert.equal(out(src), '5\n5\n5\n1\n'); sameOnOff(src);   // pre-fix memo-ON gave 5,5,5,5 (collision)
+});
+test('soundness: -0 and 0 do not collide in the memo cache (sign observable via pow)', () => {
+  // String(-0) === "0", so a naive number tag 'n:'+a keys -0 and 0 the SAME. pow(x,-1) tells them apart
+  // (Infinity vs -Infinity), so a cached f(0) must not ghost-answer f(-0). Fix tags -0 distinctly ('n:-0').
+  const src = 'agent f(x){ report pow(x, 0-1) }\nemit f(0)\nemit f(0)\nemit f(0)\nemit f((0-1)*0)';
+  assert.equal(out(src), 'Infinity\nInfinity\nInfinity\n-Infinity\n'); sameOnOff(src);
+});
 test('soundness: agents with default/rest params are not memoized at all', () => {
   // these run correctly; they are simply never cached (so no key/default holes can bite)
   sameOnOff('seed b=1\nagent d(n, m = b){ report n+m }\nemit d(2)\nemit d(2)\nemit d(2)');

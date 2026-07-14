@@ -8,7 +8,7 @@
   "main": "myxo.js",
   "scripts": {
     "test": "node --test",
-    "test:core": "node --test test/myxo.test.js test/format.test.js test/myxotest.test.js test/match.test.js test/pipe.test.js test/types.test.js test/lsp.test.js test/cli.test.js test/docs.test.js test/concurrent.test.js test/scheduler.test.js test/fibers.test.js test/examples.test.js test/plan.test.js test/mcp-framing.test.js test/mcp-server.test.js test/command-fence.test.js test/receipt.test.js",
+    "test:core": "node --test test/myxo.test.js test/format.test.js test/myxotest.test.js test/match.test.js test/pipe.test.js test/types.test.js test/lsp.test.js test/cli.test.js test/docs.test.js test/concurrent.test.js test/scheduler.test.js test/fibers.test.js test/examples.test.js test/plan.test.js test/mcp-framing.test.js test/mcp-server.test.js test/command-fence.test.js test/receipt.test.js test/soundness-fuzz.test.js",
     "test:polyglot": "node --test test/polyglot.test.js",
     "test:myxo": "node myxo.js test tests/",
     "lsp": "node myxo.js lsp",
