@@ -29,16 +29,16 @@ and the pieces only you can flip are account/key steps, not code.
    and the landing + package URLs point there.
 2. **GitHub Pages** — enable it on that repo so the landing serves at `thefinalmilkman.github.io/myxo/`
    (the landing's canonical URL and every internal link assume `/myxo/`).
-3. **npm** — `npm login` once (your account). Then `npm publish` claims the free `myxo` name.
-   (I can run publish once you're logged in, or you run the one command.)
+3. **npm** — `npm login` once (your account). Then `npm publish` claims the name.
+   (Note: bare `myxo` is blocked by npm's similarity filter vs `xo`/`yo` — shipped as `myxo-lang`.)
 
 ## 🚀 Launch sequence (the order that works)
 1. **You:** create the GitHub repo + `npm login`.
 2. **Me:** push `myxo` to GitHub `main`, tag `v1.5.0`.
-3. **Me:** `npm publish` → `npm i -g myxo` becomes real.
+3. **Me:** `npm publish` → `npm i -g myxo-lang` becomes real.
 4. **You/Me:** enable Pages → landing goes live at `/myxo/`.
 5. **Me:** add the Myxo card to Zero's homepage + sitemap; submit to IndexNow / Search Console.
-6. **Verify:** on a clean machine, `npm i -g myxo && myxo` works; landing loads; Zero's links resolve (no 404s).
+6. **Verify:** on a clean machine, `npm i -g myxo-lang && myxo` works; landing loads; Zero's links resolve (no 404s).
 7. **Me:** publish the announcement post (your review first).
 
 ## ⚠️ Honest notes

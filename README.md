@@ -32,6 +32,15 @@ reinforce i < 10 {
 }
 ```
 
+## Install
+
+```
+npm i -g myxo-lang     # gives you the `myxo` command (Node 18+, zero dependencies)
+myxo                   # multi-line REPL
+```
+
+Or run from a clone: `node myxo.js examples/fib.myx`.
+
 ## Run it
 
 ```

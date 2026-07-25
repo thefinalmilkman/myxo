@@ -1,5 +1,5 @@
 {
-  "name": "myxo",
+  "name": "myxo-lang",
   "version": "1.5.0",
   "description": "Myxo — the language of the Nexus. A small, embeddable language whose runtime is the Nexus law: useful pathways reinforce, useless pathways decay.",
   "bin": {
