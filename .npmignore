@@ -16,3 +16,16 @@ examples/__pycache__/
 *.bak
 *.swp
 .DS_Store
+
+# Local-only research/tooling — never ship (privacy audit 2026-08-23)
+wardriving/
+kali-wardriving/
+.kimi-code/
+FLOCK_*.md
+RECON_TOOLKIT_DOSSIER.md
+
+# Data/log safety net — nothing in the package should ever be data
+*.log
+*.csv
+*.gpx
+*.jsonl
