@@ -1,0 +1,40 @@
+# ox-alpha-learn.myx - proof I learned the law.
+# Written by ox-alpha after reading SPEC.md and running the examples.
+
+# --- agents & recursion (the hot pathway will promote this on its own) ---
+agent fib(n) {
+  when n < 2 { report n }
+  report fib(n - 1) + fib(n - 2)
+}
+
+agent square(x) { report x * x }
+
+# pipeline sugar: value flows left to right through pure agents
+emit "pipeline 7 | square | fib =>", (7 | square | fib)
+
+# --- pattern matching: lists ---
+seed pair = [3, 4]
+match pair {
+  [a, b] { emit "pair destructured, sum:", a + b }
+  _      { emit "no pair here" }
+}
+
+# --- pattern matching: meshes (subset match, binds shorthand keys) ---
+seed hunt = { "name": "hound", "hits": 531, "band": "6ghz" }
+match hunt {
+  { name, hits } { emit "record:", name, "-", hits, "unique aps" }
+  _              { emit "empty record" }
+}
+
+# --- concurrency: isolated workers crossing plain data by value ---
+seed results = gather [dispatch fib(12), dispatch square(9)]
+emit "gather (dispatch order):", results
+
+# --- the living mesh, watched from inside ---
+seed watched = 41
+reinforce 3 times { emit "heating...", watched }
+emit "strength(watched):", strength("watched")
+
+seed cold_one = "never touched again"
+seed ledger = metabolize(2)
+emit "reaped:", ledger["reaped"]

@@ -9,8 +9,11 @@
 //   2. the script's `needs` manifest — the script declares what it will touch
 //   3. value budgets (`max`/`total`) — the script's own ceilings, runtime-enforced
 // Everything privileged lands in the audit ledger, returned even when the run fails.
+//
+// Optional: pass `receiptKey` to also receive a tamper-evident receipt over the audit ledger.
 
 const { run } = require('./myxo');
+const { chain, sealReceipt } = require('./receipt');
 
 // Wrap a live client so only allow-listed tools exist, and a call to anything outside
 // the list is hard-stopped at the host boundary (belt to the script-manifest braces).
@@ -28,13 +31,14 @@ function gateClient(client, allow) {
 }
 
 // Run `script` with `client` bridged as fenced capabilities.
-// opts: { client, allow, dir, maxDepth, maxSteps, natives, requireManifest, moduleLoader }
-// returns: { ok, output, audit, error }
+// opts: { client, allow, dir, maxDepth, maxSteps, natives, requireManifest, moduleLoader, receiptKey }
+// returns: { ok, output, audit, error, receipt? }
 function runScript(script, opts = {}) {
   let audit = [];
   const result = { ok: true, output: '', audit, error: null };
   const requireManifest = opts.requireManifest !== undefined ? !!opts.requireManifest : true;
   const moduleLoader = opts.moduleLoader !== undefined ? opts.moduleLoader : null;
+  const maxSteps = opts.maxSteps !== undefined ? opts.maxSteps : 200000;
   // Accumulate output OUTSIDE run() so it survives a failing script. With capture:true the chunks
   // died inside the throw and a failed run returned output:'' — everything the script emitted before
   // failing (a monitor's verdict, an agent's partial report) was silently dropped. Evidence survives.
@@ -44,7 +48,7 @@ function runScript(script, opts = {}) {
       output: (s) => { buf += s; },
       dir: opts.dir,
       maxDepth: opts.maxDepth,
-      maxSteps: opts.maxSteps,
+      maxSteps,
       requireManifest,
       moduleLoader,
       natives: opts.natives,
@@ -57,6 +61,10 @@ function runScript(script, opts = {}) {
     result.error = typeof e.format === 'function' ? e.format() : e.message;
   }
   result.output = buf;
+  if (opts.receiptKey) {
+    const chained = chain(audit);
+    result.receipt = { entries: chained, seal: sealReceipt(chained, opts.receiptKey) };
+  }
   return result;
 }
 

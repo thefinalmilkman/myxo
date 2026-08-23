@@ -13,19 +13,22 @@
 
 const { Worker, MessageChannel } = require('worker_threads');
 const path = require('path');
+const { chain, sealReceipt } = require('./receipt');
 
-// runLive(script, opts) -> Promise<{ ok, output, audit, error }>
+// runLive(script, opts) -> Promise<{ ok, output, audit, error, receipt? }>
 //   opts.tools:   [{ name, inputSchema }]  the catalog to bridge as fenced capabilities
 //   opts.onCall:  async (name, argsObject) => result   the real async invoker
 //   opts.allow:   optional host allowlist of tool names (defense in depth)
 //   opts.dir, opts.maxDepth, opts.maxSteps, opts.requireManifest: passed through to the runner
 //   opts.timeoutMs: wall-clock kill switch for the worker (default 30000)
+//   opts.receiptKey: optional Buffer; if provided, the audit ledger is sealed in the parent
 function runLive(script, opts = {}) {
   const { tools = [], onCall, allow, dir, maxDepth, valueCaps } = opts;
   const requireManifest = opts.requireManifest !== undefined ? !!opts.requireManifest : true;
   const maxSteps = opts.maxSteps !== undefined ? opts.maxSteps : 200000;
   const moduleLoader = opts.moduleLoader !== undefined ? opts.moduleLoader : null;
   const timeoutMs = Number.isFinite(opts.timeoutMs) && opts.timeoutMs > 0 ? opts.timeoutMs : 30000;
+  const receiptKey = opts.receiptKey;
   if (typeof onCall !== 'function') {
     return Promise.reject(new Error('runLive needs an async onCall(name, args)'));
   }
@@ -50,6 +53,10 @@ function runLive(script, opts = {}) {
       if (timer) clearTimeout(timer);
       port1.close();
       worker.terminate();
+      if (receiptKey && v && Array.isArray(v.audit)) {
+        const chained = chain(v.audit);
+        v.receipt = { entries: chained, seal: sealReceipt(chained, receiptKey) };
+      }
       fn(v);
     };
     timer = setTimeout(() => {

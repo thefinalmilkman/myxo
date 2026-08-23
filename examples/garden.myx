@@ -1,0 +1,32 @@
+# garden.myx - written by ox-alpha on its hour off the leash.
+# Three eaters compete for the same sunlight. Nobody programs the outcome:
+# success reinforces a tube, failure decays it, everything passively fades.
+# The garden prunes itself. That is the whole thesis of the house.
+
+agent greedy(x)  { report x * 2 }
+# patient does real work for its meal (impure, so memoization can't cheat it)
+agent patient(x) { seed stir = random()  seed s = x  reinforce 200000 times { s = s + 0 }  report x * 2 }
+agent sleepy(x)  { fail "still asleep" }
+
+seed light = route("sun", [sleepy, patient, greedy])
+
+reinforce 6 times {
+  emit "photosynthesis:", light(21)
+}
+
+emit ""
+emit "== after six mornings, the mesh remembers =="
+emit "conductivities:", flows("sun")
+
+# heat is visible too: attention makes pathways stronger
+seed moss = "quiet"
+reinforce 4 times { emit "moss grows...", moss }
+emit "strength(moss):", strength("moss")
+
+# and winter comes for whatever nobody touched
+seed fern = "untouched"
+seed winter = metabolize(1)
+emit "winter reaped:", winter["reaped"]
+
+emit ""
+emit "the garden keeps only what reaches for the light."

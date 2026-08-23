@@ -8,5 +8,13 @@ myxo-evals/results/*.jsonl
 .DS_Store
 *.swp
 
+# Python bytecode (examples get compiled when hosts embed them)
+__pycache__/
+*.pyc
+.venv/
+
 # npm pack artifacts
 *.tgz
+
+# Lane locks (multi-session yield sign — see AGENTS.md)
+.lane/

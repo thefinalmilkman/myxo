@@ -3,7 +3,6 @@ test/
 tests/
 myxo-evals/
 docs/
-.github/
 
 # Website assets, not part of the package
 index.html

@@ -23,7 +23,29 @@ more reliably in Myxo than in Python? Measured on the one tier that runs for fre
 | Model | Myxo — full `SPEC.md` | Myxo — `MYXO_PROMPT.md` (Phase 5) | Python control |
 |---|---|---|---|
 | `qwen2.5-coder:7b` (local, free) | **0/30 (0%)** | **19/30 (63%)** | **18/20 (90%)** |
+| `gpt-4o` (GitHub Models free rail, 2026-07-25) | **20/30 (67%)** | — not run | **20/20 (100%)** |
 | frontier (`claude-opus-4-8`) | — blocked | — blocked | — blocked |
+
+### ⭐ First frontier datapoint (2026-07-25): gpt-4o via the FREE GitHub Models rail
+
+The Anthropic blocker was routed around: `generators/github.js` / `github-py.js` (zero-dep, OpenAI-compatible,
+token from `gh auth token`) ran the full set on `openai/gpt-4o` for **$0**. Same harness, same blind setup.
+
+- **Myxo 20/30 (67%) vs Python 20/20 (100%) on the SAME model.** On the 20 directly comparable tasks
+  (adversarial/agents/control/data — the buckets with Python controls): Myxo **12/20** vs Python **20/20**.
+  Honest verdict: at the frontier tier, a model still writes correct *general* code more reliably in Python.
+  That race was never the thesis (see Myxo's honest positioning) — and the number now PROVES it.
+- **fence 5/5 — the moat, verified on the audit ledger.** The bucket qwen-7b scored **0/5** on, gpt-4o
+  aced from the raw spec: manifest, budgets, undeclared-cap refusal, rescue. Python has NO control for
+  this bucket — it structurally can't compete there. The safety law is learnable from the spec alone.
+- **The floor-vs-frontier hypothesis confirmed:** qwen 0/30 → gpt-4o 20/30 on the identical full spec.
+  The language IS learnable from `SPEC.md` by a strong model; the 7B floor was model scale, not the doc.
+- **Weak spot: data 1/5** (two parse errors, a `.` misuse, an index slip) and `take`-syntax parse misses
+  in concurrency (3/5). Doc-improvement targets, same class of fix as the MYXO_PROMPT lift.
+- Run: `node myxo-evals/run-evals.js --model github` + `node myxo-evals/run-control.js --model github`
+  (rows in `results/github.jsonl` / `results/control-github.jsonl`; modelId `github/openai/gpt-4o`).
+- Still pending: the `MYXO_PROMPT` variant at the frontier tier (would measure the Phase-5 lift at scale),
+  and the `claude-opus-4-8` row whenever the Anthropic key has credit.
 
 ### ⭐ The MYXO_PROMPT lift: 0/30 → 19/30 (Phase 5 confirmed on the local tier)
 

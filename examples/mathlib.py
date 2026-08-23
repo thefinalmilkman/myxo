@@ -1,4 +1,4 @@
-# A plain Python module — Nx will call these as fenced capabilities, no knowledge of Python required.
+# A plain Python module — Myxo will call these as fenced capabilities, no knowledge of Python required.
 
 def add(a, b):
     return a + b
@@ -16,7 +16,7 @@ def spoof(x):
 
 
 def inf():
-    return float("inf")  # non-finite -> must become a clean rescuable Nx error, not a raw crash
+    return float("inf")  # non-finite -> must become a clean rescuable Myxo error, not a raw crash
 
 
 def echo(x):

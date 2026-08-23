@@ -35,12 +35,20 @@ function jsToNx(v) {
 // Unwrap that to the plain text a script wants; surface an error result as an MyxoError so
 // it lands in the audit ledger and an enclosing `attempt` can rescue it.
 function unwrapResult(res) {
-  if (res && typeof res === 'object' && Array.isArray(res.content)) {
+  if (res === null || res === undefined) {
+    throw new MyxoError('MCP tool returned no result');
+  }
+  if (typeof res === 'string') return res;
+  if (typeof res === 'object' && Array.isArray(res.content)) {
     const text = res.content.filter(c => c && c.type === 'text').map(c => c.text).join('\n');
     if (res.isError) throw new MyxoError(text || 'MCP tool reported an error');
     return text;
   }
-  return res;
+  if (typeof res === 'object') {
+    // A tool returned a structured object without the MCP envelope; stringify it for the script.
+    return JSON.stringify(res);
+  }
+  return String(res);
 }
 
 // Turn one Myxo call's args into the named-arguments object an MCP tool expects.

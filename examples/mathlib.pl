@@ -1,4 +1,4 @@
-# A plain Perl module — Nx calls these subs as fenced capabilities via plcall, no knowledge of Perl required.
+# A plain Perl module — Myxo calls these subs as fenced capabilities via plcall, no knowledge of Perl required.
 sub add { my ($a, $b) = @_; return $a + $b; }
 
 sub stats {

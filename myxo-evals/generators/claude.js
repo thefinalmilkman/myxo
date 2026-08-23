@@ -1,6 +1,6 @@
 'use strict';
 // Frontier tier via the Anthropic Messages API — zero deps, plain https (matches myxo's no-dep law).
-// Shape mirrors ollama.js: exports.generate(task, { specPath }) -> Promise<nxSourceString>.
+// Shape mirrors ollama.js: exports.generate(task, { specPath }) -> Promise<myxoSourceString>.
 //
 // Wired per the claude-api skill (2026-07-01):
 //   POST https://api.anthropic.com/v1/messages
